@@ -23,6 +23,8 @@ data_filters = {}
 
 COMMA_DELIM = ', '
 
+leetcode_username = ""
+
 query_all_problems = {"query": """
     query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
     problemsetQuestionList: questionList(
@@ -78,7 +80,7 @@ query_stats = {"query":"""query getUserProfile($username: String!) {
     } 
 }""",
 "variables": {
-    "username":"link787"
+    "username": leetcode_username
     }
 }
 
