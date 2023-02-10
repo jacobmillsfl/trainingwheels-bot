@@ -28,7 +28,6 @@ if __name__ == "__main__":
     #
     # if "discord mode":
     #     bot = DiscordUtil()
-    #     bot.run()
     # else:
     #     bot = StandaloneUtil()
     #
