@@ -33,3 +33,15 @@ You can test interacting with leetcode using the following command, which runs t
 ```
 python3 leetcode-questions.py
 ```
+
+## E/R Diagram for Database
+
+![E/R Diagram](./assets/bot_er_diagram.png "Optional title")
+
+`Leetcode_Question` contains all leetcode questions, scraped once at the launch of the app/db.
+
+`Leetcode_User` maps a DiscordID to a Leetcode ID. We would want this for stuff like !leetcode stats or !leetcode rank commands.
+
+`Leetcode_WeeklyChallenge` is the challenge we create each week. It is simple a date and a uniq identifier for "Week 1", "Week 2", etc.
+
+`Leetcode_WeeklyQuestion` is a collection of questions associated with a Leetcode_WeeklyChallenge.
