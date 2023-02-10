@@ -4,7 +4,6 @@ Notice: This is a proof of concept for interacting with leetcode's API in Python
 """
 
 import requests
-import json
 
 graph_url = "https://leetcode.com/graphql/"
 problem_url = "https://leetcode.com/problems/"
@@ -123,4 +122,4 @@ def get_all_user_stats():
     response = requests.get(graph_url, json=query_overall_stats)
     print(response.text)
 
-get_recent_user_stats()
+#get_recent_user_stats()

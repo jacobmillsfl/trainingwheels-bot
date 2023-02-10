@@ -13,12 +13,14 @@ if __name__ == "__main__":
     # This will eventually be part of our app initialization routine
     new_questions = LeetcodeUtil.api_questions_loadall()
     database = DatabaseUtil('./db.json')
-    database.table_leetcodequestion_insert_many(new_questions)
-    our_questions = database.table_leetcodequestion_loadall()
+    count = database.table_leetcodequestion_insert_many(new_questions)
+    print(f"Inserted {count} new questions into the database")
+    
     
     # Warning: this is just for debugging and will print a lot of data
     #           if it does, then it worked
-    print(our_questions)
+    #our_questions = database.table_leetcodequestion_loadall()
+    #print(our_questions)
 
 
     # TODO: Implement argparse to parse `--discord` argument if set.

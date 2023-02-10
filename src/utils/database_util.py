@@ -14,7 +14,7 @@ class DatabaseUtil:
         table = self.db.table(self.TABLE_LEETCODE_QUESTION)
         inserts = 0
         for item in items:
-            matches = table.search(where('titleSlug') == item['titleSlug'])
+            matches = table.search(where('id') == item['id'])
             if len(matches) == 0:
                 table.insert(item)
                 inserts += 1
