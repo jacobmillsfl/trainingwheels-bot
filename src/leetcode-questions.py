@@ -1,3 +1,8 @@
+"""
+Notice: This is a proof of concept for interacting with leetcode's API in Python.
+        The logic here should be formalized into Python classes elsewhere in the solution.
+"""
+
 import requests
 import json
 
@@ -18,7 +23,9 @@ data_filters = {}
 
 COMMA_DELIM = ', '
 
-data = {"query": """
+leetcode_username = ""
+
+query_all_problems = {"query": """
     query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
     problemsetQuestionList: questionList(
         categorySlug: $categorySlug
@@ -55,7 +62,29 @@ data = {"query": """
     }
 }
 
-response = requests.get(graph_url, headers=headers, json=data)
+query_stats = {"query":"""query getUserProfile($username: String!) { 
+    allQuestionsCount { 
+        difficulty count 
+    } matchedUser(username: $username) { 
+        contributions { 
+            points 
+        } profile { 
+            reputation ranking 
+        } submissionCalendar submitStats { 
+            acSubmissionNum { 
+                difficulty count submissions 
+            } totalSubmissionNum { 
+                difficulty count submissions 
+            } 
+        } 
+    } 
+}""",
+"variables": {
+    "username": leetcode_username
+    }
+}
+
+response = requests.get(graph_url, headers=headers, json=query_all_problems)
 
 if (response.ok):
     parsed_response = json.loads(response.text)
@@ -66,3 +95,4 @@ if (response.ok):
         print(f"Difficulty: {question['difficulty']}")
         print(f"Tags: {COMMA_DELIM.join(tag['name'] for tag in question['topicTags'])}")
         print(f"URL: {problem_url}{question['titleSlug']}\n")
+
