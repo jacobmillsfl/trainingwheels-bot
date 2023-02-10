@@ -8,4 +8,26 @@ if __name__ == "__main__":
     """
         Program entry point. Parse arguments and launch relevant initialization routines.
     """
-    pass
+
+    # Example of how to pull all leetcode questions and enter into the database
+    # This will eventually be part of our app initialization routine
+    new_questions = LeetcodeUtil.api_questions_loadall()
+    database = DatabaseUtil('./db.json')
+    database.table_leetcodequestion_insert_many(new_questions)
+    our_questions = database.table_leetcodequestion_loadall()
+    
+    # Warning: this is just for debugging and will print a lot of data
+    #           if it does, then it worked
+    print(our_questions)
+
+
+    # TODO: Implement argparse to parse `--discord` argument if set.
+    #       After parsing arguments, we will do something like the following:
+    #
+    # if "discord mode":
+    #     bot = DiscordUtil()
+    #     bot.run()
+    # else:
+    #     bot = StandaloneUtil()
+    #
+    #bot.run()
