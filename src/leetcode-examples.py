@@ -62,7 +62,7 @@ query_all_problems = {"query": """
     }
 }
 
-query_stats = {"query":"""query getUserProfile($username: String!) { 
+query_overall_stats = {"query":"""query getUserProfile($username: String!) { 
     allQuestionsCount { 
         difficulty count 
     } matchedUser(username: $username) { 
@@ -84,15 +84,43 @@ query_stats = {"query":"""query getUserProfile($username: String!) {
     }
 }
 
-response = requests.get(graph_url, headers=headers, json=query_all_problems)
+query_recent_stats = {
+    "query": """
+        query recentAcSubmissions($username: String!, $limit: Int!) {
+            recentAcSubmissionList(username: $username, limit: $limit) {
+                id
+                title
+                titleSlug
+                timestamp
+            }
+        }
+    """,
+    "variables": {
+        "username": leetcode_username,
+        "limit": data_limit
+    }
+}
 
-if (response.ok):
-    parsed_response = json.loads(response.text)
-    print(f"Total questions: {parsed_response['data']['problemsetQuestionList']['total']}")
-    questions = parsed_response['data']['problemsetQuestionList']['questions']
-    for question in questions:
-        print(f"Title: {question['title']}")
-        print(f"Difficulty: {question['difficulty']}")
-        print(f"Tags: {COMMA_DELIM.join(tag['name'] for tag in question['topicTags'])}")
-        print(f"URL: {problem_url}{question['titleSlug']}\n")
 
+def all_problems():
+    response = requests.get(graph_url, headers=headers, json=query_all_problems)
+
+    if (response.ok):
+        parsed_response = json.loads(response.text)
+        print(f"Total questions: {parsed_response['data']['problemsetQuestionList']['total']}")
+        questions = parsed_response['data']['problemsetQuestionList']['questions']
+        for question in questions:
+            print(f"Title: {question['title']}")
+            print(f"Difficulty: {question['difficulty']}")
+            print(f"Tags: {COMMA_DELIM.join(tag['name'] for tag in question['topicTags'])}")
+            print(f"URL: {problem_url}{question['titleSlug']}\n")
+
+def get_recent_user_stats():
+    response = requests.get(graph_url, json=query_recent_stats)
+    print(response.text)
+
+def get_all_user_stats():
+    response = requests.get(graph_url, json=query_overall_stats)
+    print(response.text)
+
+get_recent_user_stats()
