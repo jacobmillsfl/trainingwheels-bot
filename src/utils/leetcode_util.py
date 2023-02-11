@@ -76,7 +76,7 @@ class LeetcodeUtil:
         return recent_completions
 
 
-    # print(get_recent_submissions("King_of_Cheese"))
+# print(LeetcodeUtil.get_recent_submissions("King_of_Cheese"))
 
 
 
