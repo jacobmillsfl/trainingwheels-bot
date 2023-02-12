@@ -3,6 +3,7 @@ from typing import List
 
 class DatabaseUtil:
     TABLE_LEETCODE_QUESTION = "Leetcode_Question"
+    TABLE_LEETCODE_USER = "Leetcode_User"
 
     def __init__(self, database_path):
         self.database_path = database_path
@@ -10,11 +11,11 @@ class DatabaseUtil:
         #  put this in a Docker volume such as '/leetcode_data/db.json'
         self.db = TinyDB(self.database_path)
 
-    def table_leetcodequestion_insert_many(self, items : List[dict]) -> int:
+    def table_leetcodequestion_insert_many(self, items: List[dict]) -> int:
         table = self.db.table(self.TABLE_LEETCODE_QUESTION)
         inserts = 0
         for item in items:
-            matches = table.search(where('id') == item['id'])
+            matches = table.search(where("id") == item["id"])
             if len(matches) == 0:
                 table.insert(item)
                 inserts += 1
@@ -24,7 +25,16 @@ class DatabaseUtil:
         table = self.db.table(self.TABLE_LEETCODE_QUESTION)
         return table.all()
 
-    def table_leetcodequestion_delete(self, id : Int):
+    def table_leetcodequestion_delete(self, id: int):
         table = self.db.table(self.TABLE_LEETCODE_QUESTION)
-        return table.remove(where('id') == id)
-        
+        return table.remove(where("id") == id)
+
+    def table_leetcodeuser_insert(self, items: List[dict]) -> int:
+        table = self.db.table(self.TABLE_LEETCODE_USER)
+        inserts = 0
+        for item in items:
+            matches = table.search(where("id") == item["id"])
+            if len(matches) == 0:
+                table.insert(item)
+                inserts += 1
+        return inserts
