@@ -133,3 +133,5 @@ bot-env/
 
 # Don't check the database into the repo
 db.json
+
+src/.process.env
