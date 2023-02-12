@@ -423,6 +423,7 @@ disable=raw-checker-failed,
         deprecated-pragma,
         use-symbolic-message-instead,
         C0103, # This forces constants to be in UPPER_CASE; Removing because it is overzealous in identifying contants
+        W0107, # There is nothing wrong with using `pass` while we stub out the work to be completed
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
