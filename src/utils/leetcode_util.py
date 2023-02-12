@@ -1,7 +1,15 @@
-import requests
+"""
+    Leetcode Utility module
+"""
+
 from typing import List
+import requests
 
 class LeetcodeUtil:
+    """
+        A class for interacting with Leetcode's APIs
+    """
+
     GRAPH_URL = "https://leetcode.com/graphql/"
     PROBLEM_URL = "https://leetcode.com/problems/"
     ALL_PROBLEMS_URL = "https://leetcode.com/api/problems/all/"
@@ -12,10 +20,14 @@ class LeetcodeUtil:
 
     @staticmethod
     def api_questions_loadall() -> List[dict]:
-        results = []
-        response = requests.get(LeetcodeUtil.ALL_PROBLEMS_URL)
+        """
+            Loads all questions from the leetcode API
+        """
 
-        if (response.ok):
+        results = []
+        response = requests.get(LeetcodeUtil.ALL_PROBLEMS_URL, timeout=10000)
+
+        if response.ok:
             data = response.json()
             questions = data['stat_status_pairs']
             for question in questions:
@@ -34,13 +46,17 @@ class LeetcodeUtil:
                 results.append(formatted_question)
         else:
             print(f"Response returned status code : {response.status_code}")
-        
+
         return results
 
 
     # helper function to build the query specific to the user calling the command
     @staticmethod
     def query_builder_recent_stats(leetcode_username: str):
+        """
+            Gathers the provided user's recent stats
+        """
+
         query_recent_stats = {
         "query": """
             query recentAcSubmissions($username: String!, $limit: Int!) {
@@ -54,7 +70,7 @@ class LeetcodeUtil:
         """,
         "variables": {
             "username": leetcode_username,
-            "limit": LeetcodeUtil.data_limit
+            "limit": LeetcodeUtil.DATA_LIMIT
         }
         }
         return query_recent_stats
@@ -62,10 +78,14 @@ class LeetcodeUtil:
     # returns a list of recently completed Leetcode challenges as a dictionary.  dict{ id : title}
     @staticmethod
     def get_recent_submissions(leetcode_username: str):
+        """
+            Gathers the provided user's recent submissions
+        """
+
         recent_completions = {}
         query = LeetcodeUtil.query_builder_recent_stats(leetcode_username)
-        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query)
-        if(response.ok):
+        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+        if response.ok:
             data = response.json()
             questions = data['data']['recentAcSubmissionList']
             for question in questions:
@@ -74,5 +94,3 @@ class LeetcodeUtil:
             print(f"Response returned status code : {response.status_code}")
 
         return recent_completions
-
-

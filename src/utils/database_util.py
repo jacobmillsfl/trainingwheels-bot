@@ -1,7 +1,16 @@
-from tinydb import TinyDB, where
+"""
+    Datebase Utility module
+"""
+
 from typing import List
+from tinydb import TinyDB, where
+
 
 class DatabaseUtil:
+    """
+    A class for managing all database interactions
+    """
+
     TABLE_LEETCODE_QUESTION = "Leetcode_Question"
     TABLE_LEETCODE_USER = "Leetcode_User"
 
@@ -12,6 +21,11 @@ class DatabaseUtil:
         self.db = TinyDB(self.database_path)
 
     def table_leetcodequestion_insert_many(self, items: List[dict]) -> int:
+        """
+        Inserts a collection of items into the Leetcode_Question database
+        table
+        """
+
         table = self.db.table(self.TABLE_LEETCODE_QUESTION)
         inserts = 0
         for item in items:
@@ -22,14 +36,24 @@ class DatabaseUtil:
         return inserts
 
     def table_leetcodequestion_loadall(self):
+        """
+        Loads all items in the Leetcode_Question database table
+        """
         table = self.db.table(self.TABLE_LEETCODE_QUESTION)
         return table.all()
 
-    def table_leetcodequestion_delete(self, id: int):
+    def table_leetcodequestion_delete(self, question_id: int):
+        """
+        Deletes an item in the Leetcode_Question database table
+        """
+
         table = self.db.table(self.TABLE_LEETCODE_QUESTION)
-        return table.remove(where("id") == id)
+        return table.remove(where("id") == question_id)
 
     def table_leetcodeuser_insert(self, items: List[dict]) -> int:
+        """
+        Inserts a collection of items in the LeetcodeUser database table
+        """
         table = self.db.table(self.TABLE_LEETCODE_USER)
         inserts = 0
         for item in items:
