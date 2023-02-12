@@ -2,12 +2,20 @@ from utils.database_util import DatabaseUtil
 from utils.discord_util import DiscordUtil
 from utils.leetcode_util import LeetcodeUtil
 from utils.standalone_util import StandaloneUtil
+from dotenv import dotenv_values
+
+
 
 
 if __name__ == "__main__":
     """
         Program entry point. Parse arguments and launch relevant initialization routines.
     """
+
+    config = dotenv_values(".process.env")
+
+    #Note: this is currently a dummy token. Update with official discord bot token once registered.
+    DISCORD_AUTH_TOKEN = config.get('DISCORD_AUTH_TOKEN')
 
     # Example of how to pull all leetcode questions and enter into the database
     # This will eventually be part of our app initialization routine
@@ -27,7 +35,7 @@ if __name__ == "__main__":
     #       After parsing arguments, we will do something like the following:
     #
     # if "discord mode":
-    #     bot = DiscordUtil()
+    #     bot = DiscordUtil(DISCORD_AUTH_TOKEN)
     # else:
     #     bot = StandaloneUtil()
     #
