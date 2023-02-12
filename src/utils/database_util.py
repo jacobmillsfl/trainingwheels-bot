@@ -23,3 +23,8 @@ class DatabaseUtil:
     def table_leetcodequestion_loadall(self):
         table = self.db.table(self.TABLE_LEETCODE_QUESTION)
         return table.all()
+
+    def table_leetcodequestion_delete(self, id : Int):
+        table = self.db.table(self.TABLE_LEETCODE_QUESTION)
+        return table.remove(where('id') == id)
+        
