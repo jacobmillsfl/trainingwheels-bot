@@ -5,7 +5,7 @@ class LeetcodeUtil:
     GRAPH_URL = "https://leetcode.com/graphql/"
     PROBLEM_URL = "https://leetcode.com/problems/"
     ALL_PROBLEMS_URL = "https://leetcode.com/api/problems/all/"
-    data_limit = 100
+    DATA_LIMIT = 100
 
     def __init__(self):
         pass
