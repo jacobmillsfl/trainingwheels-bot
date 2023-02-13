@@ -50,15 +50,43 @@ class DatabaseUtil:
         table = self.db.table(self.TABLE_LEETCODE_QUESTION)
         return table.remove(where("id") == question_id)
 
-    def table_leetcodeuser_insert(self, items: List[dict]) -> int:
+    def table_leetcodeuser_insert(self, item: dict) -> bool:
         """
         Inserts a collection of items in the LeetcodeUser database table
         """
         table = self.db.table(self.TABLE_LEETCODE_USER)
-        inserts = 0
-        for item in items:
-            matches = table.search(where("id") == item["id"])
-            if len(matches) == 0:
-                table.insert(item)
-                inserts += 1
-        return inserts
+        matches = table.search(where("discord_id") == item["discord_id"] or where("leetcode_id") == item["leetcode_id"])
+        if len(matches) == 0:
+            table.insert(item)
+            return True
+        else:
+            return False
+
+    def table_leetcodeuser_load_by_discord_id(self, discord_id):
+        """
+            Loads a single item by discord id in the "Leetcode_User" database table
+        """
+        table = self.db.table(self.TABLE_LEETCODE_USER)
+        users = table.search(where("discord_id") == discord_id)
+        if len(users) == 0:
+            return None
+        else:
+            return users[0]
+
+    def table_leetcodeuser_load_by_leetcode_id(self, leetcode_id):
+        """
+            Loads a single item by leetcode id in the "Leetcode_User" database table
+        """
+        table = self.db.table(self.TABLE_LEETCODE_USER)
+        users = table.search(where("leetcode_id") == leetcode_id)
+        if len(users) == 0:
+            return None
+        else:
+            return users[0]
+
+    def table_leetcodeuser_loadall(self):
+        """
+            Loads all items in the Leetcode_User database table
+        """
+        table = self.db.table(self.TABLE_LEETCODE_USER)
+        return table.all()
