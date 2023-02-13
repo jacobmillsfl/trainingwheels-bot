@@ -4,7 +4,9 @@
 
 from typing import List
 from tinydb import TinyDB, where
-
+# from src.utils.database_util import DatabaseUtil
+# For running/testing locally
+# source bot-env/bin/activate
 
 class DatabaseUtil:
     """
@@ -55,12 +57,12 @@ class DatabaseUtil:
         Inserts a collection of items in the LeetcodeUser database table
         """
         table = self.db.table(self.TABLE_LEETCODE_USER)
-        matches = table.search(where("discord_id") == item["discord_id"] or where("leetcode_id") == item["leetcode_id"])
+        matches = table.search(where("discord_id") == item["discord_id"] \
+        or where("leetcode_id") == item["leetcode_id"])
         if len(matches) == 0:
             table.insert(item)
             return True
-        else:
-            return False
+        return False
 
     def table_leetcodeuser_load_by_discord_id(self, discord_id):
         """
@@ -70,8 +72,7 @@ class DatabaseUtil:
         users = table.search(where("discord_id") == discord_id)
         if len(users) == 0:
             return None
-        else:
-            return users[0]
+        return users[0]
 
     def table_leetcodeuser_load_by_leetcode_id(self, leetcode_id):
         """
@@ -81,8 +82,7 @@ class DatabaseUtil:
         users = table.search(where("leetcode_id") == leetcode_id)
         if len(users) == 0:
             return None
-        else:
-            return users[0]
+        return users[0]
 
     def table_leetcodeuser_loadall(self):
         """
