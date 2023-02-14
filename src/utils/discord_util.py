@@ -9,5 +9,5 @@ class DiscordUtil(CommandInterface):
         A class for performing all logic to interact with Discord as a bot
     """
 
-    def __init__(self):
+    def __init__(self, discord_auth_token):
         pass
