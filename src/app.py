@@ -15,7 +15,7 @@ if __name__ == "__main__":
     # Program entry point. Parse arguments and launch relevant initialization routines.
 
 
-    config = dotenv_values("../.process.env")
+    config = dotenv_values(".process.env")
 
     #Note: this is currently a dummy token. Update with official discord bot token once registered.
     DISCORD_AUTH_TOKEN = config.get("DISCORD_AUTH_TOKEN")

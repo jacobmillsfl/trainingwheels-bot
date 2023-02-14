@@ -60,6 +60,18 @@ DISCORD_AUTH_TOKEN=""
 DATABASE_NAME="db.json"
 ```
 
+## Running the app
+To run the app, first activate your Python virtual environment (if you haven't already)
+```
+source bot-env/bin/activate
+```
+Then call the app entry point with
+```
+python3 src/app.py
+```
+
+##
+
 ## Testing leetcode API access
 Make sure you are running in a Python virtual environment before running any of the project code.
 You can test interacting with leetcode using the following command, which runs the `leetcode-questions.py` script.

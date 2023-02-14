@@ -39,6 +39,8 @@ if [ -d "./bot-env" ]; then
 else
     echo "Creating new Python environment: bot-env"
     python3 -m venv bot-env
+    echo "Installing Python dependencies..."
+    python3 -m pip install -r requirements.txt
 fi
 
 if [ -f "./.process.env" ]; then
@@ -46,7 +48,7 @@ if [ -f "./.process.env" ]; then
 else
     echo "Creating environment file: .process.env"
 cat << EOF > .process.env
-DISCORD_AUTH_TOKEN=$discord_auth_token
-DATABASE_NAME=$database_name
+DISCORD_AUTH_TOKEN="$discord_auth_token"
+DATABASE_NAME="$database_name"
 EOF
 fi
