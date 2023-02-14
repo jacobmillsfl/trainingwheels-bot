@@ -4,10 +4,6 @@
 
 from typing import List
 from tinydb import TinyDB, where
-# from src.utils.database_util import DatabaseUtil
-# For running/testing locally
-# source bot-env/bin/activate
-
 class DatabaseUtil:
     """
     A class for managing all database interactions
