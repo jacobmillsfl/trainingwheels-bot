@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     command_parser.add_argument('--discord',
         action='store_true',
-        help='run the app in Discord mode, use via Discord.')
+        help='run the app in Discord mode, no arguments are needed for this command.')
 
     args = vars(command_parser.parse_args())
     if args['discord']:
