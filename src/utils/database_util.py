@@ -9,14 +9,31 @@ class DatabaseUtil:
     A class for managing all database interactions
     """
 
+    # Table Names
     TABLE_LEETCODE_QUESTION = "Leetcode_Question"
     TABLE_LEETCODE_USER = "Leetcode_User"
+
+    # Table Fields
+    TABLE_LEETCODE_QUESTION_FIELDS = ["id", "title", "titleSlug", "difficulty"]
 
     def __init__(self, database_path):
         self.database_path = database_path
         # Once we migrate to Docker,
         #  put this in a Docker volume such as '/leetcode_data/db.json'
         self.db = TinyDB(self.database_path)
+
+    def validate_insert(self, insert_obj: dict, required_fields: List[str]) -> bool:
+        """
+        Determines if an object to be inserted into a database table has all required
+        fields.
+        Args:
+            - insert_obj: dict
+                The object to be inserted into a table
+            - required_fields: List[str]
+                A list of all fields required for a database table
+        """
+        return isinstance(insert_obj, dict) \
+            and all(field in insert_obj.keys() for field in required_fields)
 
     def table_leetcodequestion_insert_many(self, items: List[dict]) -> int:
         """
@@ -29,8 +46,10 @@ class DatabaseUtil:
         for item in items:
             matches = table.search(where("id") == item["id"])
             if len(matches) == 0:
-                table.insert(item)
-                inserts += 1
+                # Only insert if data is in the correct schema
+                if self.validate_insert(item, self.TABLE_LEETCODE_QUESTION_FIELDS):
+                    table.insert(item)
+                    inserts += 1
         return inserts
 
     def table_leetcodequestion_loadall(self):
