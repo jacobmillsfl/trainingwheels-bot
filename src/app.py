@@ -1,19 +1,19 @@
 """
     Leetcode bot application for the TrainingWheels Discord
 """
+
+import argparse
 from dotenv import dotenv_values
 
 from utils.database_util import DatabaseUtil
-#from utils.discord_util import DiscordUtil
+from utils.discord_util import DiscordUtil
 from utils.leetcode_util import LeetcodeUtil
-#from utils.standalone_util import StandaloneUtil
-
+from utils.standalone_util import StandaloneUtil
 
 
 
 if __name__ == "__main__":
     # Program entry point. Parse arguments and launch relevant initialization routines.
-
 
     config = dotenv_values(".process.env")
 
@@ -21,11 +21,11 @@ if __name__ == "__main__":
     DISCORD_AUTH_TOKEN = config.get("DISCORD_AUTH_TOKEN")
 
     # Example of how to pull all leetcode questions and enter into the database
-    # This will eventually be part of our app initialization routine
+    # # This will eventually be part of our app initialization routine
     new_questions = LeetcodeUtil.api_questions_loadall()
     database = DatabaseUtil(config.get("DATABASE_NAME"))
-    count = database.table_leetcodequestion_insert_many(new_questions)
-    print(f"Inserted {count} new questions into the database")
+    COUNT = database.table_leetcodequestion_insert_many(new_questions)
+    print(f"Inserted {COUNT} new questions into the database")
 
 
     # Warning: this is just for debugging and will print a lot of data
@@ -34,12 +34,27 @@ if __name__ == "__main__":
     #print(our_questions)
 
 
-    # Note: Implement argparse to parse `--discord` argument if set.
-    #       After parsing arguments, we will do something like the following:
-    #
-    # if "discord mode":
-    #     bot = DiscordUtil(DISCORD_AUTH_TOKEN)
-    # else:
-    #     bot = StandaloneUtil()
-    #
+    command_parser = argparse.ArgumentParser(
+        prog='TrainingWheels Bot',
+        usage='app.py [--discord]',
+        formatter_class = argparse.RawDescriptionHelpFormatter,
+        description='''\
+    TrainingWheels Bot.
+
+    A Multi-functional bot built for the TrainingWheels discord server.
+    Primary function is to set, track, and record users' LeetCode challenge progress.
+    -----------------------------------------
+    Default == Standalone version, locally interactable via CLI''')
+
+    command_parser.add_argument('--discord',
+        action='store_true',
+        help='run the app in Discord mode, use via Discord.')
+
+    args = vars(command_parser.parse_args())
+    if args['discord']:
+        bot = DiscordUtil(DISCORD_AUTH_TOKEN)
+    else:
+        bot = StandaloneUtil()
+
+    #Once implemented within discord_util.py & standalone_util.py, enable bot.run()
     #bot.run()
