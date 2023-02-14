@@ -1,4 +1,12 @@
+"""
+    Command Inteface module
+"""
+
 class CommandInterface:
+    """
+        An interface for classes that will support leetcode bot commands
+    """
+
     def command_claim(self, leetcode_id: str) -> str:
         """
             Associates a leetcode_id with a discord_id in the Leetcode_User table.
@@ -14,7 +22,7 @@ class CommandInterface:
             Database required.
         """
         pass
-    
+
     def command_rank(self, leetcode_user_id: str) -> str:
         """
             Determines a summary of leet stats for the current user.
@@ -25,8 +33,10 @@ class CommandInterface:
 
     def command_status(self, leetcode_user_id) -> str:
         """
-            Determines the completion status of each question in the current weekly challenge for the given leetcode_user_id.
-            Calls the `submissions` leetcode API to determine which of the weekly challenge problems the given user has solved.
-            Gathers the list of current weekly challenges from the database.
+            Determines the completion status of each question in the current 
+            weekly challenge for the given leetcode_user_id. Calls the 
+            `submissions` leetcode API to determine which of the weekly
+            challenge problems the given user has solved. Gathers the list 
+            of current weekly challenges from the database.
         """
         pass
