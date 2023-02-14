@@ -2,7 +2,34 @@
 Discord bot for the Training Wheels server
 
 
-## Getting started
+## Getting started (the easy way)
+
+The `initialize_app.sh` script is provided to automatically initialize all files required by this program, including:
+ - `.process.env` - an environment file with the discord token and database name
+ - `bot-env/` - a Python virtual environment with all project dependencies
+
+You can run `.initialize_app.sh` by either sending it as an argument to your shell of choice, such as
+```bash
+bash ./initialize_app.sh
+```
+Or, you can mark the file as executable with
+```
+chmod +x ./initialize_app.sh
+```
+Then you can run the file directory with
+```bash
+./initialize_app.sh
+```
+
+**IMPORTANT**: Remember to activate the Python virtual environment before running the application.
+From your shell:
+```sh
+source bot-env/bin/activate
+```
+
+If you have already initialized your environment previously, you only need to activate the Python virtual environment to use the application.
+
+## Getting started (in detail)
 
 First, create a Python virtual environment named `bot-env`
 ```
@@ -26,6 +53,24 @@ deactivate
 ```
 
 Now you can use your shell as normal, just re-activate the virtual environment whenever you want to run this project's code again.
+
+This project uses an environment dot-file named `.process.env`. It is important that this file exists in the root directory of this repository and the file contains the following environment variables:
+```
+DISCORD_AUTH_TOKEN=""
+DATABASE_NAME="db.json"
+```
+
+## Running the app
+To run the app, first activate your Python virtual environment (if you haven't already)
+```
+source bot-env/bin/activate
+```
+Then call the app entry point with
+```
+python3 src/app.py
+```
+
+##
 
 ## Testing leetcode API access
 Make sure you are running in a Python virtual environment before running any of the project code.
