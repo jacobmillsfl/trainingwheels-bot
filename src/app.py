@@ -21,7 +21,7 @@ if __name__ == "__main__":
     DISCORD_AUTH_TOKEN = config.get("DISCORD_AUTH_TOKEN")
 
     # Example of how to pull all leetcode questions and enter into the database
-    # # This will eventually be part of our app initialization routine
+    # This will eventually be part of our app initialization routine
     new_questions = LeetcodeUtil.api_questions_loadall()
     database = DatabaseUtil(config.get("DATABASE_NAME"))
     COUNT = database.table_leetcodequestion_insert_many(new_questions)
