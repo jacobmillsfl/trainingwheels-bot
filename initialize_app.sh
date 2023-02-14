@@ -40,7 +40,10 @@ else
     echo "Creating new Python environment: bot-env"
     python3 -m venv bot-env
     echo "Installing Python dependencies..."
+    source bot-env/bin/activate
     python3 -m pip install -r requirements.txt
+    echo "Python virtual environment activated and initialized!"
+    echo "To deactivate, enter: deactivate"
 fi
 
 if [ -f "./.process.env" ]; then
