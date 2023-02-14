@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# Initializes the application
 
 echo "* * * * Training Wheels Bot Environment Initializer * * * *"
 echo ""
