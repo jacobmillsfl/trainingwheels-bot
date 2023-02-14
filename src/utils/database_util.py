@@ -58,7 +58,7 @@ class DatabaseUtil:
         """
         table = self.db.table(self.TABLE_LEETCODE_USER)
         matches = table.search(where("discord_id") == item["discord_id"] \
-        or where("leetcode_id") == item["leetcode_id"])
+            or where("leetcode_id") == item["leetcode_id"])
         if len(matches) == 0:
             table.insert(item)
             return True
