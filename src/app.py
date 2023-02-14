@@ -50,8 +50,8 @@ if __name__ == "__main__":
         action='store_true',
         help='run the app in Discord mode, no arguments are needed for this command.')
 
-    args = vars(command_parser.parse_args())
-    if args['discord']:
+    args = command_parser.parse_args()
+    if args.discord:
         bot = DiscordUtil(DISCORD_AUTH_TOKEN)
     else:
         bot = StandaloneUtil()
