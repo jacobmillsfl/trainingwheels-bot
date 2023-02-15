@@ -45,10 +45,12 @@ class DatabaseUtil:
     # Table Names
     TABLE_LEETCODE_QUESTION = "Leetcode_Question"
     TABLE_LEETCODE_USER = "Leetcode_User"
+    TABLE_WEEKLY_CHALLENGE = "Weekly_Challenge"
 
     # Table Fields
     TABLE_LEETCODE_QUESTION_FIELDS = ["id", "title", "titleSlug", "difficulty"]
     TABLE_LEETCODE_USER_FIELDS = ["discord_id", "leetcode_id"]
+    TABLE_WEEKLY_CHALLENGE_FIELDS = ["id", "date"]
 
     def __init__(self, database_path):
         self.database_path = database_path
@@ -102,8 +104,10 @@ class DatabaseUtil:
         Inserts a collection of items in the LeetcodeUser database table
         """
         table = self.db.table(self.TABLE_LEETCODE_USER)
-        matches = table.search(where("discord_id") == item["discord_id"] \
-            or where("leetcode_id") == item["leetcode_id"])
+        matches = table.search(
+            where("discord_id") == item["discord_id"]
+            or where("leetcode_id") == item["leetcode_id"]
+        )
         if len(matches) == 0:
             table.insert(item)
             return True
@@ -111,7 +115,7 @@ class DatabaseUtil:
 
     def table_leetcodeuser_load_by_discord_id(self, discord_id):
         """
-            Loads a single item by discord id in the "Leetcode_User" database table
+        Loads a single item by discord id in the "Leetcode_User" database table
         """
         table = self.db.table(self.TABLE_LEETCODE_USER)
         users = table.search(where("discord_id") == discord_id)
@@ -121,7 +125,7 @@ class DatabaseUtil:
 
     def table_leetcodeuser_load_by_leetcode_id(self, leetcode_id):
         """
-            Loads a single item by leetcode id in the "Leetcode_User" database table
+        Loads a single item by leetcode id in the "Leetcode_User" database table
         """
         table = self.db.table(self.TABLE_LEETCODE_USER)
         users = table.search(where("leetcode_id") == leetcode_id)
@@ -131,10 +135,11 @@ class DatabaseUtil:
 
     def table_leetcodeuser_loadall(self):
         """
-            Loads all items in the Leetcode_User database table
+        Loads all items in the Leetcode_User database table
         """
         table = self.db.table(self.TABLE_LEETCODE_USER)
         return table.all()
+
     def table_leetcodeuser_delete_by_leetcode_id(self, leetcode_id) -> bool:
         """
         Deletes an item by leetcode_id in the Leetcode_User database table
@@ -156,3 +161,26 @@ class DatabaseUtil:
 
         # Will return True if an item was successfully deleted
         return len(results) > 0
+
+    def table_weeklychallenge_load(self, challenge_id):
+        """
+        Loads an item by id from the Weekly_Challenge table
+        """
+
+        table = self.db.table(self.TABLE_WEEKLY_CHALLENGE)
+        results = table.search(where("id") == challenge_id)
+        if len(results) == 0:
+            return None
+        return results[0]
+
+    def table_weeklychallenge_getlatest(self):
+        """
+        Loads the item with the most recent date property
+        """
+
+        table = self.db.table(self.TABLE_WEEKLY_CHALLENGE)
+        results = table.all()
+        if len(results) == 0:
+            return None
+        sorted_results = sorted(results, key=lambda challenge: challenge["date"])
+        return sorted_results[-1]
