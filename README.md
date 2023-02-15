@@ -8,17 +8,10 @@ The `initialize_app.sh` script is provided to automatically initialize all files
  - `.process.env` - an environment file with the discord token and database name
  - `bot-env/` - a Python virtual environment with all project dependencies
 
-You can run `.initialize_app.sh` by either sending it as an argument to your shell of choice, such as
+You can run `initialize_app.sh` by "sourcing" it through your shell.
+The `source` command essentially runs the script and exports all environment variables.
 ```bash
-bash ./initialize_app.sh
-```
-Or, you can mark the file as executable with
-```
-chmod +x ./initialize_app.sh
-```
-Then you can run the file directory with
-```bash
-./initialize_app.sh
+source initialize_app.sh
 ```
 
 **IMPORTANT**: Remember to activate the Python virtual environment before running the application.

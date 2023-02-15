@@ -4,6 +4,39 @@
 
 from typing import List
 from tinydb import TinyDB, where
+
+# Decorator for validating database insert methods
+def validate_insert(required_fields):
+    """
+    Python decorator function to validate objects before they are inserted
+    into the database.
+
+    Usage:
+        Before any method that inserts data into the database, you should
+        decorate the method as such:
+
+        @validate_insert(required_fields = TABLE_XXXX_FIELDS)
+
+        In the above, `TABLE_XXXX_FIELDS` should be the class constant variable
+        containing a list of the required fields for the table to be inserted
+        into.
+
+    Note:
+        This method does not prevent inserting duplicate values for unique
+        fields. The insert method body should still enforce uniqueness
+        where appropriate.
+    """
+    def decorator(func):
+        def wrapper(self, *args):
+            if isinstance(args[0], dict) \
+                and all(field in args[0].keys() for field in required_fields) \
+                and len(args[0].keys()) == len(required_fields):
+                return func(self, *args)
+            return False # Indicates validation failure
+        return wrapper
+    return decorator
+
+# Database Utility Class Definition
 class DatabaseUtil:
     """
     A class for managing all database interactions
@@ -15,6 +48,7 @@ class DatabaseUtil:
 
     # Table Fields
     TABLE_LEETCODE_QUESTION_FIELDS = ["id", "title", "titleSlug", "difficulty"]
+    TABLE_LEETCODE_USER_FIELDS = ["discord_id", "leetcode_id"]
 
     def __init__(self, database_path):
         self.database_path = database_path
@@ -22,34 +56,29 @@ class DatabaseUtil:
         #  put this in a Docker volume such as '/leetcode_data/db.json'
         self.db = TinyDB(self.database_path)
 
-    def validate_insert(self, insert_obj: dict, required_fields: List[str]) -> bool:
+    @validate_insert(required_fields=TABLE_LEETCODE_QUESTION_FIELDS)
+    def table_leetcodequestion_insert(self, item: dict) -> bool:
         """
-        Determines if an object to be inserted into a database table has all required
-        fields.
-        Args:
-            - insert_obj: dict
-                The object to be inserted into a table
-            - required_fields: List[str]
-                A list of all fields required for a database table
+        Inserts an item into the Leetcode_Question database table
         """
-        return isinstance(insert_obj, dict) \
-            and all(field in insert_obj.keys() for field in required_fields)
+        table = self.db.table(self.TABLE_LEETCODE_QUESTION)
+
+        # Prevent duplicate ID's
+        if len(table.search(where("id") == item["id"])) == 0:
+            table.insert(item)
+            return True
+        return False
 
     def table_leetcodequestion_insert_many(self, items: List[dict]) -> int:
         """
         Inserts a collection of items into the Leetcode_Question database
         table
         """
-
-        table = self.db.table(self.TABLE_LEETCODE_QUESTION)
         inserts = 0
         for item in items:
-            matches = table.search(where("id") == item["id"])
-            if len(matches) == 0:
-                # Only insert if data is in the correct schema
-                if self.validate_insert(item, self.TABLE_LEETCODE_QUESTION_FIELDS):
-                    table.insert(item)
-                    inserts += 1
+            if self.table_leetcodequestion_insert(item):
+                inserts += 1
+
         return inserts
 
     def table_leetcodequestion_loadall(self):
@@ -67,6 +96,7 @@ class DatabaseUtil:
         table = self.db.table(self.TABLE_LEETCODE_QUESTION)
         return table.remove(where("id") == question_id)
 
+    @validate_insert(required_fields=TABLE_LEETCODE_USER_FIELDS)
     def table_leetcodeuser_insert(self, item: dict) -> bool:
         """
         Inserts a collection of items in the LeetcodeUser database table
