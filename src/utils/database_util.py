@@ -135,3 +135,24 @@ class DatabaseUtil:
         """
         table = self.db.table(self.TABLE_LEETCODE_USER)
         return table.all()
+    def table_leetcodeuser_delete_by_leetcode_id(self, leetcode_id) -> bool:
+        """
+        Deletes an item by leetcode_id in the Leetcode_User database table
+        """
+
+        table = self.db.table(self.TABLE_LEETCODE_USER)
+        results = table.remove(where("leetcode_id") == leetcode_id)
+
+        # Will return True if an item was successfully deleted
+        return len(results) > 0
+
+    def table_leetcodeuser_delete_by_discord_id(self, discord_id) -> bool:
+        """
+        Deletes an item by discord_id in the Leetcode_User database table
+        """
+
+        table = self.db.table(self.TABLE_LEETCODE_USER)
+        results = table.remove(where("discord_id") == discord_id)
+
+        # Will return True if an item was successfully deleted
+        return len(results) > 0
