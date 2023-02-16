@@ -187,7 +187,7 @@ class DatabaseUtil:
         sorted_results = sorted(results, key=lambda challenge: challenge["date"])
         return sorted_results[-1]
 
-    def table_weeklychallenge_delete(self, challenge_id: int):
+    def table_weeklychallenge_delete(self, challenge_id: int) -> bool:
         """
         Deletes an item in the Weekly_Challenge database table and 
         calls weeklyquestion_delete_by_challenge_id() to delete associated questions from
@@ -196,7 +196,7 @@ class DatabaseUtil:
         self.table_weeklyquestion_delete_by_challenge_id(challenge_id)
         table = self.db.table(self.TABLE_WEEKLY_CHALLENGE)
         results = table.remove(where("id") == challenge_id)
-        return len(results) > 0 #returns false currently as weeklychallenge_insert not implemented
+        return len(results) > 0
 
     @validate_insert(required_fields=TABLE_WEEKLY_QUESTION_FIELDS)
     def table_weeklyquestion_insert(self, item: dict) -> bool:
@@ -211,14 +211,14 @@ class DatabaseUtil:
             return True
         return False
 
-    def table_weeklyquestion_load_by_challenge_id(self, challenge_id):
+    def table_weeklyquestion_load_by_challenge_id(self, challenge_id) -> list:
         """
         Loads multiple items by challenge id in the Weekly_Question database table
         """
         table = self.db.table(self.TABLE_WEEKLY_QUESTION)
         questions = table.search(where("challenge_id") == challenge_id)
         if len(questions) == 0:
-            return None
+            return []
         return questions
 
     def table_weeklyquestion_load_by_title_slug(self, title_slug):
@@ -231,7 +231,7 @@ class DatabaseUtil:
             return None
         return questions[0]
 
-    def table_weeklyquestion_delete(self, title_slug):
+    def table_weeklyquestion_delete(self, title_slug) -> bool:
         """
         Deletes an item in the Weekly_Question database table
         """
