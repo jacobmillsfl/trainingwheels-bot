@@ -57,4 +57,4 @@ if __name__ == "__main__":
         bot = StandaloneUtil()
 
     #Once implemented within discord_util.py & standalone_util.py, enable bot.run()
-    #bot.run()
+    bot.run()
