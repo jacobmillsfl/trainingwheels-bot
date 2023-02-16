@@ -1,5 +1,5 @@
 """
-    Leetcode Utility module
+Leetcode Utility module
 """
 
 from typing import List
@@ -7,7 +7,7 @@ import requests
 
 class LeetcodeUtil:
     """
-        A class for interacting with Leetcode's APIs
+    A class for interacting with Leetcode's APIs
     """
 
     GRAPH_URL = "https://leetcode.com/graphql/"
@@ -21,7 +21,7 @@ class LeetcodeUtil:
     @staticmethod
     def api_questions_loadall() -> List[dict]:
         """
-            Loads all questions from the leetcode API
+        Loads all questions from the leetcode API
         """
 
         results = []
@@ -54,7 +54,7 @@ class LeetcodeUtil:
     @staticmethod
     def query_builder_recent_stats(leetcode_username: str):
         """
-            Gathers the provided user's recent stats
+        Gathers the provided user's recent stats
         """
 
         query_recent_stats = {
@@ -75,22 +75,36 @@ class LeetcodeUtil:
         }
         return query_recent_stats
 
-    # returns a list of recently completed Leetcode challenges as a dictionary.  dict{ id : title}
     @staticmethod
-    def get_recent_submissions(leetcode_username: str):
+    def get_recent_submissions(leetcode_username: str) -> list:
         """
-            Gathers the provided user's recent submissions
+        Gathers the provided user's recent submissions
         """
 
-        recent_completions = {}
+        recent_completions = []
         query = LeetcodeUtil.query_builder_recent_stats(leetcode_username)
         response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
         if response.ok:
             data = response.json()
             questions = data['data']['recentAcSubmissionList']
             for question in questions:
-                recent_completions[question['id']] = question['title']
+                completion = {
+                    "title": question["title"],
+                    "titleSlug": question["titleSlug"]
+                }
+                recent_completions.append(completion)
         else:
             print(f"Response returned status code : {response.status_code}")
 
         return recent_completions
+
+    @staticmethod
+    def check_challenge_completion(leetcode_id: str, title_slug: str) -> bool:
+        """
+        Determines if a user has completed a given challenge
+        """
+        submissions = LeetcodeUtil.get_recent_submissions(leetcode_id)
+        for submission in submissions:
+            if submission["titleSlug"] == title_slug:
+                return True
+        return False
