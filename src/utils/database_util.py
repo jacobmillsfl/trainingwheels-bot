@@ -167,7 +167,7 @@ class DatabaseUtil:
     @validate_insert(required_fields=TABLE_WEEKLY_CHALLENGE_FIELDS)
     def table_weeklychallenge_insert(self, item: dict) -> bool:
         """
-        Inserts an item from the Weekly_Challenge table
+        "Inserts an item to the Weekly_Challenge table"
         """
         table = self.db.table(self.TABLE_WEEKLY_CHALLENGE)
 
