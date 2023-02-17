@@ -46,11 +46,13 @@ class DatabaseUtil:
     TABLE_LEETCODE_QUESTION = "Leetcode_Question"
     TABLE_LEETCODE_USER = "Leetcode_User"
     TABLE_WEEKLY_CHALLENGE = "Weekly_Challenge"
+    TABLE_WEEKLY_QUESTION = "Weekly_Question"
 
     # Table Fields
     TABLE_LEETCODE_QUESTION_FIELDS = ["id", "title", "titleSlug", "difficulty"]
     TABLE_LEETCODE_USER_FIELDS = ["discord_id", "leetcode_id"]
     TABLE_WEEKLY_CHALLENGE_FIELDS = ["id", "date"]
+    TABLE_WEEKLY_QUESTION_FIELDS = ["challenge_id", "title_slug"]
 
     def __init__(self, database_path):
         self.database_path = database_path
@@ -184,3 +186,61 @@ class DatabaseUtil:
             return None
         sorted_results = sorted(results, key=lambda challenge: challenge["date"])
         return sorted_results[-1]
+
+    def table_weeklychallenge_delete(self, challenge_id: int) -> bool:
+        """
+        Deletes an item in the Weekly_Challenge database table and 
+        calls weeklyquestion_delete_by_challenge_id() to delete associated questions from
+        Weekly_Question database table
+        """
+        self.table_weeklyquestion_delete_by_challenge_id(challenge_id)
+        table = self.db.table(self.TABLE_WEEKLY_CHALLENGE)
+        results = table.remove(where("id") == challenge_id)
+        return len(results) > 0
+
+    @validate_insert(required_fields=TABLE_WEEKLY_QUESTION_FIELDS)
+    def table_weeklyquestion_insert(self, item: dict) -> bool:
+        """
+        Inserts an item into the Weekly_Question database table
+        """
+        table = self.db.table(self.TABLE_WEEKLY_QUESTION)
+
+        # Prevent duplicate ID's
+        if len(table.search(where("title_slug") == item["title_slug"])) == 0:
+            table.insert(item)
+            return True
+        return False
+
+    def table_weeklyquestion_load_by_challenge_id(self, challenge_id) -> list:
+        """
+        Loads multiple items by challenge id in the Weekly_Question database table
+        """
+        table = self.db.table(self.TABLE_WEEKLY_QUESTION)
+        return table.search(where("challenge_id") == challenge_id)
+
+    def table_weeklyquestion_load_by_title_slug(self, title_slug):
+        """
+        Loads a single item by title slug in the Weekly_Question database table
+        """
+        table = self.db.table(self.TABLE_WEEKLY_QUESTION)
+        questions = table.search(where("title_slug") == title_slug)
+        if len(questions) == 0:
+            return None
+        return questions[0]
+
+    def table_weeklyquestion_delete(self, title_slug) -> bool:
+        """
+        Deletes an item in the Weekly_Question database table
+        """
+        table = self.db.table(self.TABLE_WEEKLY_QUESTION)
+        results = table.remove(where("title_slug") == title_slug)
+        return len(results) > 0
+
+    def table_weeklyquestion_delete_by_challenge_id(self, challenge_id) -> bool:
+        """
+        Deletes multiple items by challenge_id in the Weekly_Question database table
+        called by table_weeklychallenge_delete()
+        """
+        table = self.db.table(self.TABLE_WEEKLY_QUESTION)
+        results = table.remove(where("challenge_id") == challenge_id)
+        return len(results) > 0
