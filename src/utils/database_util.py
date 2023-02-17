@@ -216,10 +216,7 @@ class DatabaseUtil:
         Loads multiple items by challenge id in the Weekly_Question database table
         """
         table = self.db.table(self.TABLE_WEEKLY_QUESTION)
-        questions = table.search(where("challenge_id") == challenge_id)
-        if len(questions) == 0:
-            return []
-        return questions
+        return table.search(where("challenge_id") == challenge_id)
 
     def table_weeklyquestion_load_by_title_slug(self, title_slug):
         """
