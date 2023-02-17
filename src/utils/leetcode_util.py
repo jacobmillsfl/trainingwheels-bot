@@ -3,7 +3,13 @@ Leetcode Utility module
 """
 
 from typing import List
+from random import randint
+from datetime import datetime
+
+from dotenv import dotenv_values
 import requests
+from .database_util import DatabaseUtil
+
 
 class LeetcodeUtil:
     """
@@ -14,6 +20,10 @@ class LeetcodeUtil:
     PROBLEM_URL = "https://leetcode.com/problems/"
     ALL_PROBLEMS_URL = "https://leetcode.com/api/problems/all/"
     DATA_LIMIT = 100
+
+    config = dotenv_values(".process.env")
+    database = DatabaseUtil(config.get("DATABASE_NAME"))
+
 
     def __init__(self):
         pass
@@ -108,3 +118,50 @@ class LeetcodeUtil:
             if submission["titleSlug"] == title_slug:
                 return True
         return False
+
+    def weeklychallenge_generate(self) -> bool:
+        """
+        Generates a new weekly challenge with 3 questions that have not been used before.
+        """
+
+        previous_challenge = self.database.table_weeklychallenge_getlatest()
+        if previous_challenge is None:
+            challenge_id = 1
+        else:
+            challenge_id = previous_challenge["id"] + 1
+
+        weight = 0
+        max_weight = 5
+        easy_weight = 1
+        medium_weight = 2
+        hard_weight = 3
+
+        questions = []
+
+        while weight < max_weight and len(questions) < 3:
+            #Adjust randint() range to adjust probabilities of each difficulty
+            difficulty_selector = randint(0,3)
+            if difficulty_selector == 3 and max_weight - weight >= hard_weight:
+                question = self.database.table_leetcodequestion_getrandom_newby_difficulty("hard")
+                formatted_question = {challenge_id, question["title_slug"]}
+                questions.append(formatted_question)
+                weight += hard_weight
+            elif difficulty_selector > 1 and max_weight - weight >= medium_weight:
+                question = self.database.table_leetcodequestion_getrandom_newby_difficulty("medium")
+                formatted_question = {challenge_id, question["title_slug"]}
+                questions.append(formatted_question)
+                weight += medium_weight
+            else:
+                question = self.database.table_leetcodequestion_getrandom_newby_difficulty("easy")
+                formatted_question = {challenge_id, question["title_slug"]}
+                questions.append(formatted_question)
+                weight += easy_weight
+
+        timestamp = int(datetime.utcnow().timestamp())
+        date = datetime.fromtimestamp(timestamp)
+        self.database.table_weeklychallenge_insert(challenge_id, date)
+
+        for question in questions:
+            self.database.table_weeklyquestion_insert(question)
+
+        return len(questions) > 0

@@ -3,6 +3,7 @@
 """
 
 from typing import List
+from random import randint
 from tinydb import TinyDB, where
 
 # Decorator for validating database insert methods
@@ -100,6 +101,22 @@ class DatabaseUtil:
         table = self.db.table(self.TABLE_LEETCODE_QUESTION)
         return table.remove(where("id") == question_id)
 
+    def table_leetcodequestion_getrandom_newby_difficulty(self, difficulty: str):
+        """
+        Returns a randomly selected question that matches the passed difficulty and does not
+        exist within Weekly_Question table
+        """
+        table = self.db.table(self.TABLE_LEETCODE_QUESTION)
+        questions = table.search(where("difficulty") == difficulty)
+        new = False
+        question = None
+        while new is False:
+            random_selector = randint(0, len(questions)-1)
+            question = questions[random_selector]
+            if self.table_weeklyquestion_load_by_title_slug(question["title_slug"]) is None:
+                new = True
+        return question
+
     @validate_insert(required_fields=TABLE_LEETCODE_USER_FIELDS)
     def table_leetcodeuser_insert(self, item: dict) -> bool:
         """
@@ -163,6 +180,12 @@ class DatabaseUtil:
 
         # Will return True if an item was successfully deleted
         return len(results) > 0
+
+    @validate_insert(required_fields=TABLE_WEEKLY_CHALLENGE_FIELDS)
+    def table_weeklychallenge_insert(self, challenge_id, date):
+        """
+        Insert 
+        """
 
     def table_weeklychallenge_load(self, challenge_id):
         """
