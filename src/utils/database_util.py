@@ -164,6 +164,18 @@ class DatabaseUtil:
         # Will return True if an item was successfully deleted
         return len(results) > 0
 
+    def table_weeklychallenge_insert(self, item: dict) -> bool:
+        """
+        Inserts an item by id from the Weekly_Challenge table
+        """
+        table = self.db.table(self.TABLE_WEEKLY_QUESTION)
+
+        # Prevent duplicate ID's
+        if len(table.search(where("id") == item["id"])) == 0:
+            table.insert(item)
+            return True
+        return False
+
     def table_weeklychallenge_load(self, challenge_id):
         """
         Loads an item by id from the Weekly_Challenge table
