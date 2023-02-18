@@ -25,8 +25,7 @@ class DiscordUtil(CommandInterface):
         """
         Send a notification when the bot is connected and ready to recieve events
         """
-        # print(f"Logged in as {client.user}")
-        pass
+        print(f"Logged in as {client.user}")
 
     @client.event
     async def on_message(self, message):
