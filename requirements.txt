@@ -3,3 +3,4 @@ tinydb==4.7.1
 python-dotenv==0.21.1
 pylint==2.16.1
 argparse==1.4.0
+discord==2.1.0

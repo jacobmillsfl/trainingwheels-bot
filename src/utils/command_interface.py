@@ -2,10 +2,12 @@
 Command Inteface module
 """
 
+
 class BotCommand:
     """
     A class for storing the data that make up a bot command
     """
+
     def __init__(self, action, args, errors):
         self.action = action
         self.args = args
@@ -24,13 +26,14 @@ class BotCommand:
         """
         self.errors.append(error_message)
 
+
 class CommandInterface:
     """
     An interface for classes that will support leetcode bot commands
     """
+
     VALID_COMMANDS = ["!help", "!claim", "!challenge", "!rank", "!status", "!quit"]
-    USAGE_MESSAGE = \
-"""
+    USAGE_MESSAGE = """
 Supported commands:
 
 !help                   -   Display help information
@@ -66,10 +69,10 @@ Supported commands:
 
     def command_status(self, leetcode_user_id: str) -> str:
         """
-        Determines the completion status of each question in the current 
-        weekly challenge for the given leetcode_user_id. Calls the 
+        Determines the completion status of each question in the current
+        weekly challenge for the given leetcode_user_id. Calls the
         `submissions` leetcode API to determine which of the weekly
-        challenge problems the given user has solved. Gathers the list 
+        challenge problems the given user has solved. Gathers the list
         of current weekly challenges from the database.
         """
         pass
@@ -80,7 +83,7 @@ Supported commands:
         """
         pass
 
-    def parse_command(self, command: str) -> dict:
+    def parse_command(self, command: str) -> BotCommand:
         """
         Parses and validates a given command
         """
