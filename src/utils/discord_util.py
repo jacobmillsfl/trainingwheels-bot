@@ -1,7 +1,7 @@
 """
     Discord Utility module
 """
-from discord import Intents, Client
+from discord import Intents, Client, Message
 from .command_interface import CommandInterface
 
 intents = Intents.default()
@@ -17,7 +17,6 @@ class DiscordUtil(CommandInterface):
     def __init__(self, discord_auth_token):
         self.token = discord_auth_token
 
-        self.run()
         pass
 
     @client.event
@@ -28,16 +27,16 @@ class DiscordUtil(CommandInterface):
         print(f"Logged in as {client.user}")
 
     @client.event
-    async def on_message(self, message):
+    async def on_message(self, message: Message):
         """
         Handle incoming events
         """
-        if message.author == client.user:
+        if message.author == client.user or message.channel.id != 1072303681501941791:
             return
         channel = message.channel
         command = self.parse_command(message.content)
         if len(command.errors) > 0:
-            error_message = ", ".join(command.errors)
+            error_message = "\n".join(command.errors)
             await channel.send(error_message)
         else:
             result_message = command.show_result()
