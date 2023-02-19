@@ -10,10 +10,20 @@ class StandaloneUtil(CommandInterface):
     actually connecting to Discord
     """
 
-    def __init__(self):
-        # Add Standalone only commands
-        self.VALID_COMMANDS.append("!quit")
-        self.USAGE_MESSAGE += "!quit                   -   Exits the application"
+    DEBUG_COMMANDS = {
+        "!quit":  "!quit                   -   Exits the application\n",
+        "!debug": "!debug                  -   Runs a debug routine\n"
+    }
+
+    def __init__(self, **kwargs):
+        if "database" not in kwargs:
+            raise ValueError("Database required to construct a StandaloneUtil object")
+        super().__init__(kwargs["database"])
+        # Add Standalone only data
+        for command, description in self.DEBUG_COMMANDS.items():
+            self.VALID_COMMANDS.append(command)
+            self.USAGE_MESSAGE += description
+        self.DISCORD_ID = 1
 
     def run(self):
         """
@@ -24,15 +34,25 @@ class StandaloneUtil(CommandInterface):
             command = input("Enter a bot command : ")
             parsed_command = self.parse_command(command)
             if not parsed_command.errors:
-                print(f"Running command: {parsed_command.action}")
-
+                result = ""
                 if parsed_command.action == "!quit":
-                    # Exit run() routine
                     break
                 if parsed_command.action == "!help":
                     print(self.USAGE_MESSAGE)
-                # Add support for additional commands
-
+                    continue
+                if parsed_command.action == "!claim":
+                    result = self.command_claim(self.DISCORD_ID, parsed_command.args[0])
+                elif parsed_command.action == "!challenge":
+                    result = self.command_challenge()
+                elif parsed_command.action == "!rank":
+                    result = self.command_rank(self.DISCORD_ID)
+                elif parsed_command.action == "!status":
+                    result = self.command_status(self.DISCORD_ID)
+                elif parsed_command.action == "!new-challenge":
+                    result = self.command_new_challenge()
+                elif parsed_command.action == "!debug":
+                    pass # This is for debugging custom routines
+                print(result)
             else:
                 print("\n".join(parsed_command.errors))
                 print("Enter `!help` for usage")
