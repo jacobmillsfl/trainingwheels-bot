@@ -2,6 +2,7 @@
 Command Interface module
 """
 import random
+from datetime import datetime
 from .leetcode_util import LeetcodeUtil
 
 QUESTION_DIFFICULTY_MAP = {
@@ -61,7 +62,7 @@ Supported commands:
         """
         message = ""
         create_user = False
-        claimed_user = self.database.table_leetcodeuser_load_by_discord_id(leetcode_id)
+        claimed_user = self.database.table_leetcodeuser_load_by_leetcode_id(leetcode_id)
         existing_user = self.database.table_leetcodeuser_load_by_discord_id(discord_id)
         if claimed_user and claimed_user["discord_id"] != discord_id:
             message += f"`{claimed_user['leetcode_id']}` is already claimed!"
@@ -99,7 +100,9 @@ Supported commands:
         """
         latest = self.database.table_weeklychallenge_getlatest()
         if latest:
-            result = f"* * * CHALLANGE {latest['id']} * * *\n\n"
+            start_date = datetime.fromtimestamp(latest["date"])
+            result = f"* * * CHALLANGE {latest['id']} | {start_date.date()} * * *\n\n"
+
             questions = self.database.table_weeklyquestion_load_by_challenge_id(latest["id"])
             for q in questions:
                 question = self.database.table_leetcodequestion_load(q["id"])
