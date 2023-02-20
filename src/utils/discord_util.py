@@ -1,7 +1,7 @@
 """
     Discord Utility module
 """
-from discord import Intents, Message, channel
+from discord import Intents
 from discord.ext import commands
 from .command_interface import CommandInterface
 
@@ -25,6 +25,10 @@ class DiscordUtil(commands.Bot, CommandInterface):
         self.add_commands()
 
     def add_commands(self):
+        """
+        Registers commands with the bot
+        """
+
         @self.command(name="claim", pass_context=True)
         async def command_claim(ctx: commands.Context):
             if str(ctx.channel.id) != str(self.channel_id):

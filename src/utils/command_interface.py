@@ -213,6 +213,9 @@ Supported commands:
         pass
 
     def validate_command(self, command: str, expected_command: str):
+        """
+        Ensures that the action matches the intended command
+        """
         parsed_command = self.parse_command(command)
         if parsed_command.action and parsed_command.action != expected_command:
             parsed_command.errors.append(

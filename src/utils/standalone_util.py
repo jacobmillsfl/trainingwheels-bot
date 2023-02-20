@@ -4,6 +4,7 @@ Standalone Utility module
 
 from .command_interface import CommandInterface
 
+
 class StandaloneUtil(CommandInterface):
     """
     A class for providing features similar to a Discord bot without
@@ -11,8 +12,8 @@ class StandaloneUtil(CommandInterface):
     """
 
     DEBUG_COMMANDS = {
-        "!quit":  "!quit                   -   Exits the application\n",
-        "!debug": "!debug                  -   Runs a debug routine\n"
+        "!quit": "!quit                   -   Exits the application\n",
+        "!debug": "!debug                  -   Runs a debug routine\n",
     }
 
     def __init__(self, **kwargs):
@@ -23,7 +24,7 @@ class StandaloneUtil(CommandInterface):
         for command, description in self.DEBUG_COMMANDS.items():
             self.VALID_COMMANDS.append(command)
             self.USAGE_MESSAGE += description
-        self.DISCORD_ID = 1
+        self.DISCORD_ID = "1"
 
     def run(self):
         """
@@ -51,7 +52,7 @@ class StandaloneUtil(CommandInterface):
                 elif parsed_command.action == "!new-challenge":
                     result = self.command_new_challenge()
                 elif parsed_command.action == "!debug":
-                    pass # This is for debugging custom routines
+                    pass  # This is for debugging custom routines
                 print(result)
             else:
                 print("\n".join(parsed_command.errors))
