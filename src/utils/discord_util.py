@@ -26,41 +26,93 @@ class DiscordUtil(commands.Bot, CommandInterface):
 
     def add_commands(self):
         @self.command(name="claim", pass_context=True)
-        async def command_claim(ctx):
+        async def command_claim(ctx: commands.Context):
             if str(ctx.channel.id) != str(self.channel_id):
                 return
             return_message = ""
-            discord_id = ctx.author.id
+            discord_id = str(ctx.author.id)
             parsed_command = self.validate_command(ctx.message.content, "!claim")
             if len(parsed_command.errors) > 0:
                 return_message = "\n".join(parsed_command.errors)
             else:
                 leetcode_id = parsed_command.args[0]
-                self.command_claim(discord_id, leetcode_id)
+                result = self.command_claim(discord_id, leetcode_id)
+                return_message = result
 
-            await ctx.channel.send(f"{discord_id}: {ctx.message.content}")
+            await ctx.channel.send(return_message)
 
-        # async def on_ready(self):
-        # """
-        # Send a notification when the bot is connected and ready to recieve events
-        # """
-        # print(f"Logged in as {client.user}")
+        @self.command(name="user", pass_context=True)
+        async def command_user(ctx: commands.Context):
+            if str(ctx.channel.id) != str(self.channel_id):
+                return
+            return_message = ""
+            discord_id = str(ctx.author.id)
+            parsed_command = self.validate_command(ctx.message.content, "!user")
+            if len(parsed_command.errors) > 0:
+                return_message = "\n".join(parsed_command.errors)
+            else:
+                result = self.command_user(discord_id)
+                return_message = result
 
-    # @client.event
-    # async def on_message(self, message: Message):
-    #     """
-    #     Handle incoming events
-    #     """
-    #     if message.author == client.user or message.channel.id != 1072303681501941791:
-    #         return
-    #     channel = message.channel
-    #     command = self.parse_command(message.content)
-    #     if len(command.errors) > 0:
-    #         error_message = "\n".join(command.errors)
-    #         await channel.send(error_message)
-    #     else:
-    #         result_message = command.show_result()
-    #         await channel.send(result_message)
+            await ctx.channel.send(return_message)
+
+        @self.command(name="challenge", pass_context=True)
+        async def command_challenge(ctx: commands.Context):
+            if str(ctx.channel.id) != str(self.channel_id):
+                return
+            return_message = ""
+            parsed_command = self.validate_command(ctx.message.content, "!challenge")
+            if len(parsed_command.errors) > 0:
+                return_message = "\n".join(parsed_command.errors)
+            else:
+                result = self.command_challenge()
+                return_message = result
+
+            await ctx.channel.send(return_message)
+
+        @self.command(name="rank", pass_context=True)
+        async def command_rank(ctx: commands.Context):
+            if str(ctx.channel.id) != str(self.channel_id):
+                return
+            discord_id = str(ctx.author.id)
+            return_message = ""
+            parsed_command = self.validate_command(ctx.message.content, "!rank")
+            if len(parsed_command.errors) > 0:
+                return_message = "\n".join(parsed_command.errors)
+            else:
+                result = self.command_rank(discord_id)
+                return_message = result
+
+            await ctx.channel.send(return_message)
+
+        @self.command(name="status", pass_context=True)
+        async def command_status(ctx: commands.Context):
+            if str(ctx.channel.id) != str(self.channel_id):
+                return
+            discord_id = str(ctx.author.id)
+            return_message = ""
+            parsed_command = self.validate_command(ctx.message.content, "!status")
+            if len(parsed_command.errors) > 0:
+                return_message = "\n".join(parsed_command.errors)
+            else:
+                result = self.command_status(discord_id)
+                return_message = result
+
+            await ctx.channel.send(return_message)
+
+        @self.command(name="new-challenge", parse_context=True)
+        async def command_new_challenge(ctx: commands.Context):
+            return_message = ""
+            parsed_command = self.validate_command(
+                ctx.message.content, "!new-challenge"
+            )
+            if len(parsed_command.errors) > 0:
+                return_message = "\n".join(parsed_command.errors)
+            else:
+                result = self.command_new_challenge()
+                return_message = result
+
+            await ctx.channel.send(return_message)
 
     def run(self):
         super(commands.Bot, self).run(self.token)

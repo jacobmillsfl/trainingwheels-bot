@@ -5,11 +5,8 @@ import random
 from datetime import datetime
 from .leetcode_util import LeetcodeUtil
 
-QUESTION_DIFFICULTY_MAP = {
-    1: "Easy",
-    2: "Medium",
-    3: "Hard"
-}
+QUESTION_DIFFICULTY_MAP = {1: "Easy", 2: "Medium", 3: "Hard"}
+
 
 class BotCommand:
     """
@@ -34,12 +31,21 @@ class BotCommand:
         """
         self.errors.append(error_message)
 
+
 class CommandInterface:
     """
     An interface for classes that will support leetcode bot commands
     """
 
-    VALID_COMMANDS = ["!help", "!claim", "!challenge", "!rank", "!status", "!new-challenge"]
+    VALID_COMMANDS = [
+        "!user",
+        "!help",
+        "!claim",
+        "!challenge",
+        "!rank",
+        "!status",
+        "!new-challenge",
+    ]
     USAGE_MESSAGE = """
 Supported commands:
 
@@ -54,7 +60,7 @@ Supported commands:
     def __init__(self, database):
         self.database = database
 
-    def command_claim(self, discord_id: int, leetcode_id: str) -> str:
+    def command_claim(self, discord_id: str, leetcode_id: str) -> str:
         """
         Associates a leetcode_id with a discord_id in the Leetcode_User table.
         Local only, no API required.
@@ -69,8 +75,10 @@ Supported commands:
         elif existing_user and existing_user["leetcode_id"] == leetcode_id:
             message += "Your account is already registered"
         elif existing_user:
-            message += "Your account is already registered with Leetcode username" \
+            message += (
+                "Your account is already registered with Leetcode username"
                 f" `{existing_user['leetcode_id']}`\n"
+            )
             message += "Deleting association... "
             deleted = self.database.table_leetcodeuser_delete_by_discord_id(discord_id)
             if deleted:
@@ -81,10 +89,7 @@ Supported commands:
         else:
             create_user = True
         if create_user:
-            user = {
-                "discord_id": discord_id,
-                "leetcode_id": leetcode_id
-            }
+            user = {"discord_id": discord_id, "leetcode_id": leetcode_id}
             success = self.database.table_leetcodeuser_insert(user)
             if success:
                 message += f"Leetcode Username `{leetcode_id}` successfully claimed!\n"
@@ -103,11 +108,15 @@ Supported commands:
             start_date = datetime.fromtimestamp(latest["date"])
             result = f"* * * CHALLENGE {latest['id']} | {start_date.date()} * * *\n\n"
 
-            questions = self.database.table_weeklyquestion_load_by_challenge_id(latest["id"])
+            questions = self.database.table_weeklyquestion_load_by_challenge_id(
+                latest["id"]
+            )
             for q in questions:
                 question = self.database.table_leetcodequestion_load(q["id"])
                 result += f"Question:\t{question['title']}\n"
-                result += f"Difficulty:\t{QUESTION_DIFFICULTY_MAP[question['difficulty']]}\n"
+                result += (
+                    f"Difficulty:\t{QUESTION_DIFFICULTY_MAP[question['difficulty']]}\n"
+                )
                 result += f"URL:\t\thttps://leetcode.com/problems/{question['title_slug']}/\n\n"
         else:
             result = "There are no challenges at this time"
@@ -124,8 +133,10 @@ Supported commands:
             leetcode_user_id = user["leetcode_id"]
             result = LeetcodeUtil.get_user_rank(leetcode_user_id)
         else:
-            result = "Leetcode user not found. Claim your user idea with" \
+            result = (
+                "Leetcode user not found. Claim your user idea with"
                 " `!claim <leetcode_username>`"
+            )
         return result
 
     def command_status(self, discord_id: str) -> str:
@@ -145,12 +156,17 @@ Supported commands:
                 result += "No current challenges"
             else:
                 result += f"User {leetcode_user_id}'s Weekly Challenge status:\n"
-                questions = self.database.table_weeklyquestion_load_by_challenge_id(challenge["id"])
+                questions = self.database.table_weeklyquestion_load_by_challenge_id(
+                    challenge["id"]
+                )
                 for question in questions:
-                    complete = LeetcodeUtil.check_challenge_completion(leetcode_user_id
-                                                                       , question["title_slug"])
-                    result += f"\t{'Complete' if complete else 'Incomplete'}"\
+                    complete = LeetcodeUtil.check_challenge_completion(
+                        leetcode_user_id, question["title_slug"]
+                    )
+                    result += (
+                        f"\t{'Complete' if complete else 'Incomplete'}"
                         f"\t-\t{question['title']}\n"
+                    )
         else:
             result += "Leetcode user not found. Claim your user idea with"
             result += " `!claim <leetcode_username>`"
@@ -164,8 +180,8 @@ Supported commands:
         previous_questions = self.database.table_weeklyquestion_loadall()
         previous_question_slugs = [q["title_slug"] for q in previous_questions]
         valid_questions = list(
-                filter(lambda q: q["title_slug"] not in previous_question_slugs, questions)
-            )
+            filter(lambda q: q["title_slug"] not in previous_question_slugs, questions)
+        )
         random.shuffle(valid_questions)
         weekly_questions = []
         current_difficulty = 0
@@ -177,6 +193,18 @@ Supported commands:
                     break
         # Insert new questions into datbase
         return self.database.create_new_weekly_challenge(weekly_questions)
+
+    def command_user(self, discord_id: str) -> str:
+        """
+        Gets the leetcode_id of the requested user
+        """
+        return_message = ""
+        user = self.database.table_leetcodeuser_load_by_discord_id(discord_id)
+        if not user:
+            return_message = "User not found"
+        else:
+            return_message = user["leetcode_id"]
+        return return_message
 
     def run(self) -> None:
         """

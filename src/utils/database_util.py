@@ -4,6 +4,8 @@
 from datetime import datetime
 from typing import List
 from tinydb import TinyDB, where
+from tinydb.table import Document
+
 
 # Decorator for validating database insert methods
 def validate_insert(required_fields):
@@ -26,15 +28,21 @@ def validate_insert(required_fields):
         fields. The insert method body should still enforce uniqueness
         where appropriate.
     """
+
     def decorator(func):
         def wrapper(self, *args):
-            if isinstance(args[0], dict) \
-                and all(field in args[0].keys() for field in required_fields) \
-                and len(args[0].keys()) == len(required_fields):
+            if (
+                isinstance(args[0], dict)
+                and all(field in args[0].keys() for field in required_fields)
+                and len(args[0].keys()) == len(required_fields)
+            ):
                 return func(self, *args)
-            return False # Indicates validation failure
+            return False  # Indicates validation failure
+
         return wrapper
+
     return decorator
+
 
 # Database Utility Class Definition
 class DatabaseUtil:
@@ -52,7 +60,13 @@ class DatabaseUtil:
     TABLE_LEETCODE_QUESTION_FIELDS = ["id", "title", "title_slug", "difficulty"]
     TABLE_LEETCODE_USER_FIELDS = ["discord_id", "leetcode_id"]
     TABLE_WEEKLY_CHALLENGE_FIELDS = ["id", "date"]
-    TABLE_WEEKLY_QUESTION_FIELDS = ["id","challenge_id", "title", "title_slug", "difficulty"]
+    TABLE_WEEKLY_QUESTION_FIELDS = [
+        "id",
+        "challenge_id",
+        "title",
+        "title_slug",
+        "difficulty",
+    ]
 
     def __init__(self, database_path):
         self.database_path = database_path
@@ -212,7 +226,7 @@ class DatabaseUtil:
 
     def table_weeklychallenge_delete(self, challenge_id: int) -> bool:
         """
-        Deletes an item in the Weekly_Challenge database table and 
+        Deletes an item in the Weekly_Challenge database table and
         calls weeklyquestion_delete_by_challenge_id() to delete associated questions from
         Weekly_Question database table
         """
@@ -233,20 +247,16 @@ class DatabaseUtil:
         else:
             new_chal_id = 1
         timestamp = datetime.timestamp(datetime.now())
-        challenge = {
-            "id": new_chal_id,
-            "date": timestamp
-        }
+        challenge = {"id": new_chal_id, "date": timestamp}
         chal_success = self.table_weeklychallenge_insert(challenge)
         if chal_success:
             for question in question_list:
-                weekly_question = {
-                    **question,
-                    "challenge_id": new_chal_id
-                }
+                weekly_question = {**question, "challenge_id": new_chal_id}
                 question_success = self.table_weeklyquestion_insert(weekly_question)
                 if not question_success:
-                    message += f"Error creating weekly question `{question['title_slug']}`\n"
+                    message += (
+                        f"Error creating weekly question `{question['title_slug']}`\n"
+                    )
                     success = False
         else:
             message += "Error creating weekly challenge"
@@ -302,7 +312,7 @@ class DatabaseUtil:
         results = table.remove(where("challenge_id") == challenge_id)
         return len(results) > 0
 
-    def table_weeklyquestion_loadall(self) -> List[dict]:
+    def table_weeklyquestion_loadall(self) -> List[Document]:
         """
         Loads all items in the Weekly_Question database table
         """
