@@ -101,7 +101,7 @@ Supported commands:
         latest = self.database.table_weeklychallenge_getlatest()
         if latest:
             start_date = datetime.fromtimestamp(latest["date"])
-            result = f"* * * CHALLANGE {latest['id']} | {start_date.date()} * * *\n\n"
+            result = f"* * * CHALLENGE {latest['id']} | {start_date.date()} * * *\n\n"
 
             questions = self.database.table_weeklyquestion_load_by_challenge_id(latest["id"])
             for q in questions:
