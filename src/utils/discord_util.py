@@ -14,10 +14,14 @@ class DiscordUtil(commands.Bot, CommandInterface):
     A class for performing all logic to interact with Discord as a bot
     """
 
-    def __init__(self, discord_auth_token, channel_id):
+    def __init__(self, **kwargs):
         commands.Bot.__init__(self, command_prefix="!", self_bot=False, intents=intents)
-        self.token = discord_auth_token
-        self.channel_id = channel_id
+        self.token = kwargs["token"]
+        self.channel_id = kwargs["channel_id"]
+
+        database = kwargs["database"]
+        CommandInterface.__init__(self, database)
+
         self.add_commands()
 
     def add_commands(self):
@@ -32,7 +36,7 @@ class DiscordUtil(commands.Bot, CommandInterface):
                 return_message = "\n".join(parsed_command.errors)
             else:
                 leetcode_id = parsed_command.args[0]
-                self.command_claim(leetcode_id)
+                self.command_claim(discord_id, leetcode_id)
 
             await ctx.channel.send(f"{discord_id}: {ctx.message.content}")
 
