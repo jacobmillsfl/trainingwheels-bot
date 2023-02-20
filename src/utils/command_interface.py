@@ -83,6 +83,14 @@ Supported commands:
         """
         pass
 
+    def validate_command(self, command: str, expected_command: str):
+        parsed_command = self.parse_command(command)
+        if parsed_command.action and parsed_command.action != expected_command:
+            parsed_command.errors.append(
+                f"Unexpected command {parsed_command.action}, expected: {expected_command}"
+            )
+        return parsed_command
+
     def parse_command(self, command: str) -> BotCommand:
         """
         Parses and validates a given command
