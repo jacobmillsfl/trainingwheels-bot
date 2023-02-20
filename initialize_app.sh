@@ -62,5 +62,6 @@ else
 cat << EOF > .process.env
 DISCORD_AUTH_TOKEN="$discord_auth_token"
 DATABASE_NAME="$database_name"
+CHANNEL_ID=""
 EOF
 fi
