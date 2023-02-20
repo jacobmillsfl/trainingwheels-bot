@@ -39,7 +39,7 @@ class LeetcodeUtil:
                 formatted_question = {
                     "id": question['stat']['question_id'],
                     "title": question['stat']['question__title'],
-                    "titleSlug": question['stat']['question__title_slug'],
+                    "title_slug": question['stat']['question__title_slug'],
                     "difficulty": question['difficulty']['level'],
                 }
 
@@ -76,6 +76,73 @@ class LeetcodeUtil:
         return query_recent_stats
 
     @staticmethod
+    def query_builder_user_rank(leetcode_username: str):
+        """
+        Builds a leetcode query to gather the provided user's rank
+        """
+        query_user_rank = {
+            "query": """
+                query getUserProfile($username: String!) { 
+                    allQuestionsCount { 
+                        difficulty count 
+                    } matchedUser(username: $username) { 
+                        contributions { 
+                            points 
+                        } profile { 
+                            reputation ranking 
+                        } submissionCalendar submitStats { 
+                            acSubmissionNum { 
+                                difficulty count submissions 
+                            } totalSubmissionNum { 
+                                difficulty count submissions 
+                            } 
+                        } 
+                    } 
+                }
+            """,
+            "variables": {
+                "username": leetcode_username
+            }
+        }
+        return query_user_rank
+
+    @staticmethod
+    def get_user_rank(leetcode_username: str) -> str:
+        """
+        Gathers the provided user's rank
+        """
+
+        rank = ""
+        query = LeetcodeUtil.query_builder_user_rank(leetcode_username)
+        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+        if response.ok:
+            data = response.json()
+            if len(data) == 0:
+                rank = "Unable to find rank information for Leetcode username" \
+                    f" `{leetcode_username}`"
+            else:
+                submissions = data["data"]["matchedUser"]["submitStats"]["acSubmissionNum"]
+                submissions_easy = list(filter(lambda x: x["difficulty"] == "Easy" , submissions))
+                submissions_med = list(filter(lambda x: x["difficulty"] == "Medium" , submissions))
+                submissions_hard = list(filter(lambda x: x["difficulty"] == "Hard" , submissions))
+                easy_count = submissions_easy.pop()["count"] if len(submissions_easy) > 0 else 0
+                med_count = submissions_med.pop()["count"] if len(submissions_med) > 0 else 0
+                hard_count = submissions_hard.pop()["count"] if len(submissions_hard) > 0 else 0
+                rank = f"""
+Name:                {leetcode_username}
+Ranking:             {data['data']['matchedUser']['profile']['ranking']}
+Contribution Points: {data['data']['matchedUser']['contributions']['points']}
+Easy Challenges:     {easy_count}
+Medium Challenges:   {med_count}
+Hard Challenges:     {hard_count}
+"""
+
+        else:
+            rank = f"Leetcode API Error {response.status_code}"
+
+        return rank
+
+    @staticmethod
     def get_recent_submissions(leetcode_username: str) -> list:
         """
         Gathers the provided user's recent submissions
@@ -90,7 +157,7 @@ class LeetcodeUtil:
             for question in questions:
                 completion = {
                     "title": question["title"],
-                    "titleSlug": question["titleSlug"]
+                    "title_slug": question["titleSlug"]
                 }
                 recent_completions.append(completion)
         else:
@@ -105,6 +172,6 @@ class LeetcodeUtil:
         """
         submissions = LeetcodeUtil.get_recent_submissions(leetcode_id)
         for submission in submissions:
-            if submission["titleSlug"] == title_slug:
+            if submission["title_slug"] == title_slug:
                 return True
         return False

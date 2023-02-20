@@ -14,10 +14,11 @@ class DiscordUtil(CommandInterface):
     A class for performing all logic to interact with Discord as a bot
     """
 
-    def __init__(self, discord_auth_token):
-        self.token = discord_auth_token
-
-        pass
+    def __init__(self, **kwargs):
+        if "database" not in kwargs or "token" not in kwargs:
+            raise ValueError("Token and database required to construct a DiscordUtil object")
+        self.token = kwargs["token"]
+        super().__init__(kwargs["database"])
 
     @client.event
     async def on_ready(self):
@@ -39,7 +40,7 @@ class DiscordUtil(CommandInterface):
             error_message = "\n".join(command.errors)
             await channel.send(error_message)
         else:
-            result_message = command.show_result()
+            result_message = command.get_result()
             await channel.send(result_message)
 
     def run(self):
