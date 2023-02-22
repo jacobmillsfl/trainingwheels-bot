@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     command_parser = argparse.ArgumentParser(
         prog="TrainingWheels Bot",
-        usage="app.py [--discord] [--update]",
+        usage="leetcode_bot.py [--discord] [--update]",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""\
     TrainingWheels Bot.

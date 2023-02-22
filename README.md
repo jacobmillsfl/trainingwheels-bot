@@ -60,17 +60,17 @@ source bot-env/bin/activate
 ```
 Then call the app entry point with
 ```
-python3 src/app.py
+python3 src/leetcode_bot.py
 ```
 
 ## App arguments
 To run the app in Discord mode, use the `--discord` argument.
 ```
-python3 src/app.py --discord
+python3 src/leetcode_bot.py --discord
 ```
 To update the local database on app launch, use the `--update` argument.
 ```
-python3 src/app.py --update
+python3 src/leetcode_bot.py --update
 ```
 These arguments can be combined. If you do not use any arguments, the app will launch in Standalone mode and will use an existing database (if one exists).
 
