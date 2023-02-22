@@ -107,6 +107,108 @@ class LeetcodeUtil:
         return query_user_rank
 
     @staticmethod
+    def query_builder_user_submissions(leetcode_username: str, skip: int = 0):
+        """
+        Builds a leetcode query to gather the provided user's submissions
+        """
+        query_user_submissions = {
+            "query": """
+                query userSolutionTopics($username: String!, $orderBy: TopicSortingOption, $skip: Int, $first: Int) {
+                    userSolutionTopics(
+                        username: $username
+                        orderBy: $orderBy
+                        skip: $skip
+                        first: $first
+                    ) {
+                        pageInfo {
+                            hasNextPage
+                        }
+                        edges {
+                            node {
+                                id
+                                title
+                                url
+                                viewCount
+                                questionTitle
+                                post {
+                                    creationDate
+                                    voteCount
+                                }
+                            }
+                        }
+                    }
+                }
+            """,
+            "variables": {
+                "username": leetcode_username,
+                "orderBy":"newest_to_oldest",
+                "skip":skip,
+                "first":100
+            }
+        }
+        return query_user_submissions
+
+    @staticmethod
+    def query_builder_solution_by_id(solution_id: int):
+        """
+        Builds a leetcode query to gather a specific submission
+        """
+        query_submission = {
+            "query": """
+                query communitySolution($topicId: Int!) {
+                    isSolutionTopic(id: $topicId)
+                    topic(id: $topicId) {
+                        id
+                        viewCount
+                        topLevelCommentCount
+                        favoriteCount
+                        subscribed
+                        title
+                        pinned
+                        solutionTags {
+                            name
+                            slug
+                        }
+                        hideFromTrending
+                        commentCount
+                        isFavorite
+                        post {
+                            id
+                            voteCount
+                            voteStatus
+                            content
+                            updationDate
+                            creationDate
+                            status
+                            isHidden
+                        author {
+                            isDiscussAdmin
+                            isDiscussStaff
+                            username
+                            nameColor
+                            activeBadge {
+                                displayName
+                                icon
+                            }
+                            profile {
+                                userAvatar
+                                reputation
+                            }
+                            isActive
+                        }
+                        authorIsModerator
+                        isOwnPost
+                    }
+                }
+            }
+            """,
+            "variables": {
+                "topicId": solution_id
+            }
+        }
+        return query_submission
+
+    @staticmethod
     def get_user_rank(leetcode_username: str) -> str:
         """
         Gathers the provided user's rank
@@ -175,3 +277,59 @@ Hard Challenges:     {hard_count}
             if submission["title_slug"] == title_slug:
                 return True
         return False
+
+    @staticmethod
+    def get_solution_by_id(solution_id: int) -> str:
+        """
+        Gather's a published Leetcode question solutions, including code
+        """
+        query = LeetcodeUtil.query_builder_solution_by_id(solution_id)
+        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+        solution = ""
+        if response.ok:
+            response_json = response.json()
+            if "errors" in response_json.keys():
+                print("\n".join(response_json["errors"]))
+            else:
+                tags = [tag["slug"] for tag in response_json["data"]["topic"]["solutionTags"]]
+                tag_str = "\t".join(tags)
+                code = response_json["data"]["topic"]["post"]["content"]
+                solution = f"{tag_str}\n\n{code}"
+        else:
+            print(f"Response returned status code : {response.status_code}")
+        return solution
+
+    @staticmethod
+    def get_user_solutions(leetcode_id: str) -> str:
+        """
+        Returns a list of all public solutions created by a Leetcode user
+        """
+        solutions = []
+        nextPage = True
+        skipAmount = 0
+        while nextPage:
+            query = LeetcodeUtil.query_builder_user_submissions(leetcode_id, skip=skipAmount)
+            response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+            if response.ok:
+                response_json = response.json()
+                if "errors" in response_json.keys():
+                    print("\n".join(response_json["errors"]))
+                    break
+                data = response_json["data"]
+                nextPage = data["userSolutionTopics"]["pageInfo"]["hasNextPage"]
+                skipAmount += LeetcodeUtil.DATA_LIMIT
+                edges = data["userSolutionTopics"]["edges"]
+                for edge in edges:
+                    solution = {
+                        "id": int(edge["node"]["id"]),
+                        "title": edge["node"]["title"],
+                        "url": edge["node"]["url"],
+                        "questionTitle": edge["node"]["questionTitle"],
+                        "date": edge["node"]["post"]["creationDate"] * 1000
+                    }
+                    solution["code"] = LeetcodeUtil.get_solution_by_id(solution["id"])
+                    solutions.append(solution)
+            else:
+                print(f"Response returned status code : {response.status_code}")
+
+        return solutions

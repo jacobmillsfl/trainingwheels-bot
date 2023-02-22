@@ -1,6 +1,12 @@
 """
 Notice: This is a proof of concept for interacting with leetcode's API in Python.
         The logic here should be formalized into Python classes elsewhere in the solution.
+        
+        THIS FILE IS NOT BEING LINTED
+        
+        As long as modifications to this file are not incorrect / breaking, coding
+        and testing examples here are not only accepted but also encouraged. Whenever this
+        application reaches maturity, we will delete this file.
 """
 
 import requests
@@ -123,3 +129,8 @@ def get_all_user_stats():
     print(response.text)
 
 #get_recent_user_stats()
+
+from utils.leetcode_util import LeetcodeUtil
+leet = LeetcodeUtil()
+r = leet.get_user_solutions(leetcode_username)
+print(r)
