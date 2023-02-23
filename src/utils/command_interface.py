@@ -163,11 +163,12 @@ Supported commands:
                 total = len(questions)
                 completed = 0
                 leetcode_id = user["leetcode_id"]
-                for q in question:
+                for q in questions:
                     if LeetcodeUtil.check_challenge_completion(leetcode_id, q["title_slug"]):
                         completed += 1
                 percentage = completed/total
-                result += f"User {leetcode_user_id}'s Weekly Challenge status: {percentage}% Complete\n"
+                result += f"User {leetcode_user_id}'s Weekly Challenge status: {percentage}% \
+                    Complete\n"
                 questions = self.database.table_weeklyquestion_load_by_challenge_id(
                     challenge["id"]
                 )
