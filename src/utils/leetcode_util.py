@@ -107,7 +107,7 @@ class LeetcodeUtil:
         return query_user_rank
 
     @staticmethod
-    def query_builder_user_submissions(leetcode_username: str, skip: int = 0):
+    def query_builder_user_submissions(leetcode_username: str, offset: int, skip: int):
         """
         Builds a leetcode query to gather the provided user's submissions
         """
@@ -141,9 +141,9 @@ class LeetcodeUtil:
             """,
             "variables": {
                 "username": leetcode_username,
-                "orderBy":"newest_to_oldest",
-                "skip":skip,
-                "first":100
+                "orderBy": "newest_to_oldest",
+                "skip": skip,
+                "first": offset
             }
         }
         return query_user_submissions
@@ -306,9 +306,10 @@ Hard Challenges:     {hard_count}
         """
         solutions = []
         nextPage = True
-        skipAmount = 0
+        offset = 0
+        skip = LeetcodeUtil.DATA_LIMIT
         while nextPage:
-            query = LeetcodeUtil.query_builder_user_submissions(leetcode_id, skip=skipAmount)
+            query = LeetcodeUtil.query_builder_user_submissions(leetcode_id, offset, skip)
             response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
             if response.ok:
                 response_json = response.json()
@@ -317,8 +318,8 @@ Hard Challenges:     {hard_count}
                     break
                 data = response_json["data"]
                 nextPage = data["userSolutionTopics"]["pageInfo"]["hasNextPage"]
-                skipAmount += LeetcodeUtil.DATA_LIMIT
                 edges = data["userSolutionTopics"]["edges"]
+                offset += skip
                 for edge in edges:
                     solution = {
                         "id": int(edge["node"]["id"]),
