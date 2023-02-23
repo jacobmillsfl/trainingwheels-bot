@@ -121,7 +121,7 @@ Supported commands:
                 result += (
                     f"Difficulty:\t{QUESTION_DIFFICULTY_MAP[question['difficulty']]}\n"
                 )
-                result += f"URL:\t\thttps://leetcode.com/problems/{question['title_slug']}/\n\n"
+                result += f"URL:\t\t<https://leetcode.com/problems/{question['title_slug']}/>\n\n"
         else:
             result = "There are no challenges at this time"
         return result
