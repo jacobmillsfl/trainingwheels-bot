@@ -159,7 +159,15 @@ Supported commands:
             if not challenge:
                 result += "No current challenges"
             else:
-                result += f"User {leetcode_user_id}'s Weekly Challenge status:\n"
+                questions = self.database.table_weeklyquestion_load_by_challenge_id()
+                total = len(questions)
+                completed = 0
+                leetcode_id = user["leetcode_id"]
+                for q in question:
+                    if LeetcodeUtil.check_challenge_completion(leetcode_id, q["title_slug"]):
+                        completed += 1
+                percentage = completed/total
+                result += f"User {leetcode_user_id}'s Weekly Challenge status: {percentage}% Complete\n"
                 questions = self.database.table_weeklyquestion_load_by_challenge_id(
                     challenge["id"]
                 )
