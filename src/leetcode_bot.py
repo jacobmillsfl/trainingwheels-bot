@@ -56,7 +56,7 @@ if __name__ == "__main__":
             database=database, token=DISCORD_AUTH_TOKEN, channel_id=CHANNEL_ID
         )
     else:
-        bot = StandaloneUtil(database=database)
+        bot = StandaloneUtil(database=database, discode_mode=False)
 
     # Once implemented within discord_util.py & standalone_util.py, enable bot.run()
     bot.run()

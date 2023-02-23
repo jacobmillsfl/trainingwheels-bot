@@ -4,6 +4,7 @@ Command Interface module
 import random
 from datetime import datetime
 from .leetcode_util import LeetcodeUtil
+from .emojis import Emojis
 
 QUESTION_DIFFICULTY_MAP = {1: "Easy", 2: "Medium", 3: "Hard"}
 
@@ -57,8 +58,11 @@ Supported commands:
 !new-challenge          -   Generate a new Weekly Challenge
 """
 
-    def __init__(self, database):
+    def __init__(self, database, discord_mode=False):
         self.database = database
+        self.discord_mode = discord_mode
+        self.reaction_complete = Emojis.check_mark if discord_mode else "Complete"
+        self.reaction_incomplete = Emojis.red_x if discord_mode else "Incomplete"
 
     def command_claim(self, discord_id: str, leetcode_id: str) -> str:
         """
@@ -164,7 +168,7 @@ Supported commands:
                         leetcode_user_id, question["title_slug"]
                     )
                     result += (
-                        f"\t{'Complete' if complete else 'Incomplete'}"
+                        f"\t{self.reaction_complete if complete else self.reaction_incomplete}"
                         f"\t-\t{question['title']}\n"
                     )
         else:
