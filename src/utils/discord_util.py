@@ -20,7 +20,7 @@ class DiscordUtil(commands.Bot, CommandInterface):
         self.channel_id = kwargs["channel_id"]
 
         database = kwargs["database"]
-        CommandInterface.__init__(self, database)
+        CommandInterface.__init__(self, database, discord_mode=True)
 
         self.add_commands()
 
