@@ -49,7 +49,6 @@ class CommandInterface:
     ]
     USAGE_MESSAGE = """
 Supported commands:
-
 !help                   -   Display help information
 !claim <leetcode_id>    -   Associate <leetcode_id> with the user's discord_id
 !challenge              -   Display the latest weekly challenge
