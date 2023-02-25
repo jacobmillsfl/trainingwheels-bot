@@ -215,6 +215,10 @@ Supported commands:
         return return_message
 
     def command_group_status(self) -> str:
+        """
+        Calculates and summarizes the number of users who have completed each question
+        in the current challenge
+        """
         result = ""
         users = self.database.table_leetcodeuser_loadall()
         challenge = self.database.table_weeklychallenge_getlatest()
@@ -234,6 +238,7 @@ Supported commands:
             else:
                 total_completions = 0
                 for question in questions:
+                    title = question["title"]
                     completions = len(
                         [
                             user
@@ -244,7 +249,7 @@ Supported commands:
                         ]
                     )
                     total_completions += completions
-                    result += f"{question['title']}\n    {completions}/{len(users)} users completed this question\n"
+                    result += f"{title}\n\t{completions}/{len(users)} users completed\n"
                 group_percentage = (
                     ((len(users) * total_completions) / total_completions)
                     if total_completions > 0
