@@ -3,6 +3,8 @@ Command Interface module
 """
 import random
 from datetime import datetime
+
+from utils.database_util import DatabaseUtil
 from .leetcode_util import LeetcodeUtil
 from .emojis import Emojis
 
@@ -46,19 +48,20 @@ class CommandInterface:
         "!rank",
         "!status",
         "!new-challenge",
+        "!group-status",
     ]
     USAGE_MESSAGE = """
 Supported commands:
-
 !help                   -   Display help information
 !claim <leetcode_id>    -   Associate <leetcode_id> with the user's discord_id
 !challenge              -   Display the latest weekly challenge
 !rank                   -   Display user's all time Leetcode status
 !status                 -   Display user's completion status of current weekly challenge
 !new-challenge          -   Generate a new Weekly Challenge
+!group-status           -   Display all users' completion status of current weekly challenge
 """
 
-    def __init__(self, database, discord_mode=False):
+    def __init__(self, database: DatabaseUtil, discord_mode=False):
         self.database = database
         self.discord_mode = discord_mode
         self.reaction_complete = Emojis.check_mark if discord_mode else "Complete"
@@ -72,8 +75,10 @@ Supported commands:
         """
         message = ""
         create_user = False
-        claimed_user = self.database.table_leetcodeuser_load_by_leetcode_id(leetcode_id)
-        existing_user = self.database.table_leetcodeuser_load_by_discord_id(discord_id)
+        claimed_user = self.database.table_leetcodeuser_load_by_leetcode_id(
+            leetcode_id)
+        existing_user = self.database.table_leetcodeuser_load_by_discord_id(
+            discord_id)
         if claimed_user and claimed_user["discord_id"] != discord_id:
             message += f"`{claimed_user['leetcode_id']}` is already claimed!"
         elif existing_user and existing_user["leetcode_id"] == leetcode_id:
@@ -84,7 +89,8 @@ Supported commands:
                 f" `{existing_user['leetcode_id']}`\n"
             )
             message += "Deleting association... "
-            deleted = self.database.table_leetcodeuser_delete_by_discord_id(discord_id)
+            deleted = self.database.table_leetcodeuser_delete_by_discord_id(
+                discord_id)
             if deleted:
                 message += "Deletion success!\n"
                 create_user = True
@@ -159,18 +165,28 @@ Supported commands:
             if not challenge:
                 result += "No current challenges"
             else:
-                result += f"User {leetcode_user_id}'s Weekly Challenge status:\n"
                 questions = self.database.table_weeklyquestion_load_by_challenge_id(
                     challenge["id"]
                 )
-                for question in questions:
-                    complete = LeetcodeUtil.check_challenge_completion(
-                        leetcode_user_id, question["title_slug"]
-                    )
-                    result += (
-                        f"\t{self.reaction_complete if complete else self.reaction_incomplete}"
-                        f"\t-\t{question['title']}\n"
-                    )
+                total = len(questions)
+                if total == 0:
+                    result += "No current weekly questions"
+                else:
+                    completed = 0
+                    for question in questions:
+                        question["complete"] = LeetcodeUtil.check_challenge_completion(
+                            leetcode_user_id, question["title_slug"]
+                        )
+                        if question["complete"]:
+                            completed += 1
+                    percentage = int(completed/total * 100)
+                    result += f"User {leetcode_user_id}'s Weekly Challenge status: {percentage}%\n"
+                    for question in questions:
+                        complete = question["complete"]
+                        result += (
+                            f"\t{self.reaction_complete if complete else self.reaction_incomplete}"
+                            f"\t-\t{question['title']}\n"
+                        )
         else:
             result += "Leetcode user not found. Claim your user idea with"
             result += " `!claim <leetcode_username>`"
@@ -184,7 +200,8 @@ Supported commands:
         previous_questions = self.database.table_weeklyquestion_loadall()
         previous_question_slugs = [q["title_slug"] for q in previous_questions]
         valid_questions = list(
-            filter(lambda q: q["title_slug"] not in previous_question_slugs, questions)
+            filter(lambda q: q["title_slug"]
+                   not in previous_question_slugs, questions)
         )
         random.shuffle(valid_questions)
         weekly_questions = []
@@ -209,6 +226,48 @@ Supported commands:
         else:
             return_message = user["leetcode_id"]
         return return_message
+
+    def command_group_status(self) -> str:
+        """
+        Calculates and summarizes the number of users who have completed each question
+        in the current challenge
+        """
+        result = ""
+        users = self.database.table_leetcodeuser_loadall()
+        challenge = self.database.table_weeklychallenge_getlatest()
+        if not challenge:
+            result += "No current challenge"
+        elif len(users) == 0:
+            result += "No registered users"
+        else:
+            date = datetime.fromtimestamp(challenge["date"])
+            result += f"Challenge {challenge['id']} | {date.strftime('%Y-%m-%d')}\n"
+            questions = self.database.table_weeklyquestion_load_by_challenge_id(
+                challenge["id"]
+            )
+            total_questions = len(questions)
+            if total_questions == 0:
+                result += "Current challenge is empty"
+            else:
+                total_completions = 0
+                for question in questions:
+                    title = question["title"]
+                    completions = len(
+                        [
+                            user
+                            for user in users
+                            if LeetcodeUtil.check_challenge_completion(
+                                user["leetcode_id"], question["title_slug"]
+                            )
+                        ]
+                    )
+                    total_completions += completions
+                    result += f"{title}\n\t{completions}/{len(users)} users completed\n"
+                group_percentage = int(
+                    ((total_completions / (len(users) * total_questions))) * 100
+                )
+                result += f"Group completion: {group_percentage}%"
+        return result
 
     def run(self) -> None:
         """
@@ -239,7 +298,8 @@ Supported commands:
         if len(parts) == 0:
             errors.append("Invalid command, no input given")
         elif parts[0] not in self.VALID_COMMANDS:
-            errors.append(f"`{parts[0]}` is not a currently supported command.")
+            errors.append(
+                f"`{parts[0]}` is not a currently supported command.")
         else:
             action = parts[0]
             args = parts[1:]
