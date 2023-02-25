@@ -5,6 +5,7 @@ Leetcode Utility module
 from typing import List
 import requests
 
+
 class LeetcodeUtil:
     """
     A class for interacting with Leetcode's APIs
@@ -49,8 +50,8 @@ class LeetcodeUtil:
 
         return results
 
-
     # helper function to build the query specific to the user calling the command
+
     @staticmethod
     def query_builder_recent_stats(leetcode_username: str):
         """
@@ -58,7 +59,7 @@ class LeetcodeUtil:
         """
 
         query_recent_stats = {
-        "query": """
+            "query": """
             query recentAcSubmissions($username: String!, $limit: Int!) {
                 recentAcSubmissionList(username: $username, limit: $limit) {
                     id
@@ -68,10 +69,10 @@ class LeetcodeUtil:
                 }
             }
         """,
-        "variables": {
-            "username": leetcode_username,
-            "limit": LeetcodeUtil.DATA_LIMIT
-        }
+            "variables": {
+                "username": leetcode_username,
+                "limit": LeetcodeUtil.DATA_LIMIT
+            }
         }
         return query_recent_stats
 
@@ -216,7 +217,8 @@ class LeetcodeUtil:
 
         rank = ""
         query = LeetcodeUtil.query_builder_user_rank(leetcode_username)
-        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+        response = requests.get(LeetcodeUtil.GRAPH_URL,
+                                json=query, timeout=10000)
         if response.ok:
             data = response.json()
             if len(data) == 0:
@@ -224,12 +226,18 @@ class LeetcodeUtil:
                     f" `{leetcode_username}`"
             else:
                 submissions = data["data"]["matchedUser"]["submitStats"]["acSubmissionNum"]
-                submissions_easy = list(filter(lambda x: x["difficulty"] == "Easy" , submissions))
-                submissions_med = list(filter(lambda x: x["difficulty"] == "Medium" , submissions))
-                submissions_hard = list(filter(lambda x: x["difficulty"] == "Hard" , submissions))
-                easy_count = submissions_easy.pop()["count"] if len(submissions_easy) > 0 else 0
-                med_count = submissions_med.pop()["count"] if len(submissions_med) > 0 else 0
-                hard_count = submissions_hard.pop()["count"] if len(submissions_hard) > 0 else 0
+                submissions_easy = list(
+                    filter(lambda x: x["difficulty"] == "Easy", submissions))
+                submissions_med = list(
+                    filter(lambda x: x["difficulty"] == "Medium", submissions))
+                submissions_hard = list(
+                    filter(lambda x: x["difficulty"] == "Hard", submissions))
+                easy_count = submissions_easy.pop()["count"] if len(
+                    submissions_easy) > 0 else 0
+                med_count = submissions_med.pop()["count"] if len(
+                    submissions_med) > 0 else 0
+                hard_count = submissions_hard.pop()["count"] if len(
+                    submissions_hard) > 0 else 0
                 rank = f"""
 Name:                {leetcode_username}
 Ranking:             {data['data']['matchedUser']['profile']['ranking']}
@@ -252,7 +260,8 @@ Hard Challenges:     {hard_count}
 
         recent_completions = []
         query = LeetcodeUtil.query_builder_recent_stats(leetcode_username)
-        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+        response = requests.get(LeetcodeUtil.GRAPH_URL,
+                                json=query, timeout=10000)
         if response.ok:
             data = response.json()
             questions = data['data']['recentAcSubmissionList']
@@ -284,14 +293,16 @@ Hard Challenges:     {hard_count}
         Gather's a published Leetcode question solutions, including code
         """
         query = LeetcodeUtil.query_builder_solution_by_id(solution_id)
-        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+        response = requests.get(LeetcodeUtil.GRAPH_URL,
+                                json=query, timeout=10000)
         solution = ""
         if response.ok:
             response_json = response.json()
             if "errors" in response_json.keys():
                 print("\n".join(response_json["errors"]))
             else:
-                tags = [tag["slug"] for tag in response_json["data"]["topic"]["solutionTags"]]
+                tags = [tag["slug"]
+                        for tag in response_json["data"]["topic"]["solutionTags"]]
                 tag_str = "\t".join(tags)
                 code = response_json["data"]["topic"]["post"]["content"]
                 solution = f"{tag_str}\n\n{code}"
@@ -309,8 +320,10 @@ Hard Challenges:     {hard_count}
         offset = 0
         skip = LeetcodeUtil.DATA_LIMIT
         while nextPage:
-            query = LeetcodeUtil.query_builder_user_submissions(leetcode_id, offset, skip)
-            response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+            query = LeetcodeUtil.query_builder_user_submissions(
+                leetcode_id, offset, skip)
+            response = requests.get(
+                LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
             if response.ok:
                 response_json = response.json()
                 if "errors" in response_json.keys():
@@ -328,9 +341,11 @@ Hard Challenges:     {hard_count}
                         "questionTitle": edge["node"]["questionTitle"],
                         "date": edge["node"]["post"]["creationDate"] * 1000
                     }
-                    solution["code"] = LeetcodeUtil.get_solution_by_id(solution["id"])
+                    solution["code"] = LeetcodeUtil.get_solution_by_id(
+                        solution["id"])
                     solutions.append(solution)
             else:
-                print(f"Response returned status code : {response.status_code}")
+                print(
+                    f"Response returned status code : {response.status_code}")
 
         return solutions
