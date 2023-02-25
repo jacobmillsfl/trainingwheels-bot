@@ -3,13 +3,7 @@ Leetcode Utility module
 """
 
 from typing import List
-from random import randint
-from datetime import datetime
-
-from dotenv import dotenv_values
 import requests
-from .database_util import DatabaseUtil
-
 
 class LeetcodeUtil:
     """
@@ -20,10 +14,7 @@ class LeetcodeUtil:
     PROBLEM_URL = "https://leetcode.com/problems/"
     ALL_PROBLEMS_URL = "https://leetcode.com/api/problems/all/"
     DATA_LIMIT = 100
-
-    config = dotenv_values(".process.env")
-    database = DatabaseUtil(config.get("DATABASE_NAME"))
-
+    TIMEOUT = 10000
 
     def __init__(self):
         pass
@@ -35,7 +26,7 @@ class LeetcodeUtil:
         """
 
         results = []
-        response = requests.get(LeetcodeUtil.ALL_PROBLEMS_URL, timeout=10000)
+        response = requests.get(LeetcodeUtil.ALL_PROBLEMS_URL, timeout=LeetcodeUtil.TIMEOUT)
 
         if response.ok:
             data = response.json()
@@ -226,7 +217,7 @@ class LeetcodeUtil:
 
         rank = ""
         query = LeetcodeUtil.query_builder_user_rank(leetcode_username)
-        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=LeetcodeUtil.TIMEOUT)
         if response.ok:
             data = response.json()
             if len(data) == 0:
@@ -262,7 +253,7 @@ Hard Challenges:     {hard_count}
 
         recent_completions = []
         query = LeetcodeUtil.query_builder_recent_stats(leetcode_username)
-        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=LeetcodeUtil.TIMEOUT)
         if response.ok:
             data = response.json()
             questions = data['data']['recentAcSubmissionList']
@@ -294,7 +285,7 @@ Hard Challenges:     {hard_count}
         Gather's a published Leetcode question solutions, including code
         """
         query = LeetcodeUtil.query_builder_solution_by_id(solution_id)
-        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=LeetcodeUtil.TIMEOUT)
         solution = ""
         if response.ok:
             response_json = response.json()
@@ -315,19 +306,21 @@ Hard Challenges:     {hard_count}
         Returns a list of all public solutions created by a Leetcode user
         """
         solutions = []
-        nextPage = True
+        next_page = True
         offset = 0
         skip = LeetcodeUtil.DATA_LIMIT
-        while nextPage:
+        while next_page:
             query = LeetcodeUtil.query_builder_user_submissions(leetcode_id, offset, skip)
-            response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+            response = requests.get(
+                LeetcodeUtil.GRAPH_URL, json=query, timeout=LeetcodeUtil.TIMEOUT
+                )
             if response.ok:
                 response_json = response.json()
                 if "errors" in response_json.keys():
                     print("\n".join(response_json["errors"]))
                     break
                 data = response_json["data"]
-                nextPage = data["userSolutionTopics"]["pageInfo"]["hasNextPage"]
+                next_page = data["userSolutionTopics"]["pageInfo"]["hasNextPage"]
                 edges = data["userSolutionTopics"]["edges"]
                 offset += skip
                 for edge in edges:
