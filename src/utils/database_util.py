@@ -68,7 +68,7 @@ class DatabaseUtil:
         "difficulty",
     ]
 
-    def __init__(self, database_path):
+    def __init__(self, database_path: str):
         self.database_path = database_path
         # Once we migrate to Docker,
         #  put this in a Docker volume such as '/leetcode_data/db.json'
@@ -159,7 +159,7 @@ class DatabaseUtil:
             return None
         return users[0]
 
-    def table_leetcodeuser_loadall(self):
+    def table_leetcodeuser_loadall(self) -> List[Document]:
         """
         Loads all items in the Leetcode_User database table
         """

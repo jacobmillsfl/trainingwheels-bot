@@ -3,6 +3,8 @@ Command Interface module
 """
 import random
 from datetime import datetime
+
+from utils.database_util import DatabaseUtil
 from .leetcode_util import LeetcodeUtil
 from .emojis import Emojis
 
@@ -46,6 +48,7 @@ class CommandInterface:
         "!rank",
         "!status",
         "!new-challenge",
+        "!group-status",
     ]
     USAGE_MESSAGE = """
 Supported commands:
@@ -56,9 +59,10 @@ Supported commands:
 !rank                   -   Display user's all time Leetcode status
 !status                 -   Display user's completion status of current weekly challenge
 !new-challenge          -   Generate a new Weekly Challenge
+!group-status           -   Display all users' completion status of current weekly challenge
 """
 
-    def __init__(self, database, discord_mode=False):
+    def __init__(self, database: DatabaseUtil, discord_mode=False):
         self.database = database
         self.discord_mode = discord_mode
         self.reaction_complete = Emojis.check_mark if discord_mode else "Complete"
@@ -209,6 +213,45 @@ Supported commands:
         else:
             return_message = user["leetcode_id"]
         return return_message
+
+    def command_group_status(self) -> str:
+        result = ""
+        users = self.database.table_leetcodeuser_loadall()
+        challenge = self.database.table_weeklychallenge_getlatest()
+        if not challenge:
+            result += "No current challenge"
+        elif len(users) == 0:
+            result += "No registered users"
+        else:
+            date = datetime.fromtimestamp(challenge["date"])
+            result += f"Challenge {challenge['id']} | {date.strftime('%Y-%m-%d')}\n"
+            questions = self.database.table_weeklyquestion_load_by_challenge_id(
+                challenge["id"]
+            )
+            total_questions = len(questions)
+            if total_questions == 0:
+                result += "Current challenge is empty"
+            else:
+                total_completions = 0
+                for question in questions:
+                    completions = len(
+                        [
+                            user
+                            for user in users
+                            if LeetcodeUtil.check_challenge_completion(
+                                user["leetcode_id"], question["title_slug"]
+                            )
+                        ]
+                    )
+                    total_completions += completions
+                    result += f"{question['title']}\n    {completions}/{len(users)} users completed this question\n"
+                group_percentage = (
+                    ((len(users) * total_completions) / total_completions)
+                    if total_completions > 0
+                    else 0
+                )
+                result += f"Group completion: {group_percentage}%"
+        return result
 
     def run(self) -> None:
         """

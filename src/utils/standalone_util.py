@@ -51,6 +51,8 @@ class StandaloneUtil(CommandInterface):
                     result = self.command_status(self.DISCORD_ID)
                 elif parsed_command.action == "!new-challenge":
                     result = self.command_new_challenge()
+                elif parsed_command.action == "!group-status":
+                    result = self.command_group_status()
                 elif parsed_command.action == "!debug":
                     pass  # This is for debugging custom routines
                 print(result)
