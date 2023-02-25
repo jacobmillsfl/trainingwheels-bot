@@ -5,6 +5,8 @@ Leetcode Utility module
 from typing import List
 import requests
 
+from .query_builder import QueryBuilder
+
 class LeetcodeUtil:
     """
     A class for interacting with Leetcode's APIs
@@ -50,165 +52,6 @@ class LeetcodeUtil:
 
         return results
 
-
-    # helper function to build the query specific to the user calling the command
-    @staticmethod
-    def query_builder_recent_stats(leetcode_username: str):
-        """
-        Gathers the provided user's recent stats
-        """
-
-        query_recent_stats = {
-        "query": """
-            query recentAcSubmissions($username: String!, $limit: Int!) {
-                recentAcSubmissionList(username: $username, limit: $limit) {
-                    id
-                    title
-                    titleSlug
-                    timestamp
-                }
-            }
-        """,
-        "variables": {
-            "username": leetcode_username,
-            "limit": LeetcodeUtil.DATA_LIMIT
-        }
-        }
-        return query_recent_stats
-
-    @staticmethod
-    def query_builder_user_rank(leetcode_username: str):
-        """
-        Builds a leetcode query to gather the provided user's rank
-        """
-        query_user_rank = {
-            "query": """
-                query getUserProfile($username: String!) { 
-                    allQuestionsCount { 
-                        difficulty count 
-                    } matchedUser(username: $username) { 
-                        contributions { 
-                            points 
-                        } profile { 
-                            reputation ranking 
-                        } submissionCalendar submitStats { 
-                            acSubmissionNum { 
-                                difficulty count submissions 
-                            } totalSubmissionNum { 
-                                difficulty count submissions 
-                            } 
-                        } 
-                    } 
-                }
-            """,
-            "variables": {
-                "username": leetcode_username
-            }
-        }
-        return query_user_rank
-
-    @staticmethod
-    def query_builder_user_submissions(leetcode_username: str, offset: int, skip: int):
-        """
-        Builds a leetcode query to gather the provided user's submissions
-        """
-        query_user_submissions = {
-            "query": """
-                query userSolutionTopics($username: String!, $orderBy: TopicSortingOption, $skip: Int, $first: Int) {
-                    userSolutionTopics(
-                        username: $username
-                        orderBy: $orderBy
-                        skip: $skip
-                        first: $first
-                    ) {
-                        pageInfo {
-                            hasNextPage
-                        }
-                        edges {
-                            node {
-                                id
-                                title
-                                url
-                                viewCount
-                                questionTitle
-                                post {
-                                    creationDate
-                                    voteCount
-                                }
-                            }
-                        }
-                    }
-                }
-            """,
-            "variables": {
-                "username": leetcode_username,
-                "orderBy": "newest_to_oldest",
-                "skip": skip,
-                "first": offset
-            }
-        }
-        return query_user_submissions
-
-    @staticmethod
-    def query_builder_solution_by_id(solution_id: int):
-        """
-        Builds a leetcode query to gather a specific submission
-        """
-        query_submission = {
-            "query": """
-                query communitySolution($topicId: Int!) {
-                    isSolutionTopic(id: $topicId)
-                    topic(id: $topicId) {
-                        id
-                        viewCount
-                        topLevelCommentCount
-                        favoriteCount
-                        subscribed
-                        title
-                        pinned
-                        solutionTags {
-                            name
-                            slug
-                        }
-                        hideFromTrending
-                        commentCount
-                        isFavorite
-                        post {
-                            id
-                            voteCount
-                            voteStatus
-                            content
-                            updationDate
-                            creationDate
-                            status
-                            isHidden
-                        author {
-                            isDiscussAdmin
-                            isDiscussStaff
-                            username
-                            nameColor
-                            activeBadge {
-                                displayName
-                                icon
-                            }
-                            profile {
-                                userAvatar
-                                reputation
-                            }
-                            isActive
-                        }
-                        authorIsModerator
-                        isOwnPost
-                    }
-                }
-            }
-            """,
-            "variables": {
-                "topicId": solution_id
-            }
-        }
-        return query_submission
-
     @staticmethod
     def get_user_rank(leetcode_username: str) -> str:
         """
@@ -216,7 +59,7 @@ class LeetcodeUtil:
         """
 
         rank = ""
-        query = LeetcodeUtil.query_builder_user_rank(leetcode_username)
+        query = QueryBuilder.query_builder_user_rank(leetcode_username)
         response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=LeetcodeUtil.TIMEOUT)
         if response.ok:
             data = response.json()
@@ -252,7 +95,7 @@ Hard Challenges:     {hard_count}
         """
 
         recent_completions = []
-        query = LeetcodeUtil.query_builder_recent_stats(leetcode_username)
+        query = QueryBuilder.query_builder_recent_stats(leetcode_username, LeetcodeUtil.DATA_LIMIT)
         response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=LeetcodeUtil.TIMEOUT)
         if response.ok:
             data = response.json()
@@ -284,7 +127,7 @@ Hard Challenges:     {hard_count}
         """
         Gather's a published Leetcode question solutions, including code
         """
-        query = LeetcodeUtil.query_builder_solution_by_id(solution_id)
+        query = QueryBuilder.query_builder_solution_by_id(solution_id)
         response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=LeetcodeUtil.TIMEOUT)
         solution = ""
         if response.ok:
@@ -310,7 +153,7 @@ Hard Challenges:     {hard_count}
         offset = 0
         skip = LeetcodeUtil.DATA_LIMIT
         while next_page:
-            query = LeetcodeUtil.query_builder_user_submissions(leetcode_id, offset, skip)
+            query = QueryBuilder.query_builder_user_submissions(leetcode_id, offset, skip)
             response = requests.get(
                 LeetcodeUtil.GRAPH_URL, json=query, timeout=LeetcodeUtil.TIMEOUT
                 )
