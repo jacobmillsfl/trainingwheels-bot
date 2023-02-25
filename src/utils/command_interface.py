@@ -72,8 +72,10 @@ Supported commands:
         """
         message = ""
         create_user = False
-        claimed_user = self.database.table_leetcodeuser_load_by_leetcode_id(leetcode_id)
-        existing_user = self.database.table_leetcodeuser_load_by_discord_id(discord_id)
+        claimed_user = self.database.table_leetcodeuser_load_by_leetcode_id(
+            leetcode_id)
+        existing_user = self.database.table_leetcodeuser_load_by_discord_id(
+            discord_id)
         if claimed_user and claimed_user["discord_id"] != discord_id:
             message += f"`{claimed_user['leetcode_id']}` is already claimed!"
         elif existing_user and existing_user["leetcode_id"] == leetcode_id:
@@ -84,7 +86,8 @@ Supported commands:
                 f" `{existing_user['leetcode_id']}`\n"
             )
             message += "Deleting association... "
-            deleted = self.database.table_leetcodeuser_delete_by_discord_id(discord_id)
+            deleted = self.database.table_leetcodeuser_delete_by_discord_id(
+                discord_id)
             if deleted:
                 message += "Deletion success!\n"
                 create_user = True
@@ -159,27 +162,28 @@ Supported commands:
             if not challenge:
                 result += "No current challenges"
             else:
-                questions = self.database.table_weeklyquestion_load_by_challenge_id()
-                total = len(questions)
-                completed = 0
-                leetcode_id = user["leetcode_id"]
-                for q in questions:
-                    if LeetcodeUtil.check_challenge_completion(leetcode_id, q["title_slug"]):
-                        completed += 1
-                percentage = completed/total
-                result += f"User {leetcode_user_id}'s Weekly Challenge status: {percentage}% \
-                    Complete\n"
                 questions = self.database.table_weeklyquestion_load_by_challenge_id(
                     challenge["id"]
                 )
-                for question in questions:
-                    complete = LeetcodeUtil.check_challenge_completion(
-                        leetcode_user_id, question["title_slug"]
-                    )
-                    result += (
-                        f"\t{self.reaction_complete if complete else self.reaction_incomplete}"
-                        f"\t-\t{question['title']}\n"
-                    )
+                total = len(questions)
+                if total == 0:
+                    result += "No current weekly questions"
+                else:
+                    completed = 0
+                    for question in questions:
+                        question["complete"] = LeetcodeUtil.check_challenge_completion(
+                            leetcode_user_id, question["title_slug"]
+                        )
+                        if question["complete"]:
+                            completed += 1
+                    percentage = int(completed/total * 100)
+                    result += f"User {leetcode_user_id}'s Weekly Challenge status: {percentage}%\n"
+                    for question in questions:
+                        complete = question["complete"]
+                        result += (
+                            f"\t{self.reaction_complete if complete else self.reaction_incomplete}"
+                            f"\t-\t{question['title']}\n"
+                        )
         else:
             result += "Leetcode user not found. Claim your user idea with"
             result += " `!claim <leetcode_username>`"
@@ -193,7 +197,8 @@ Supported commands:
         previous_questions = self.database.table_weeklyquestion_loadall()
         previous_question_slugs = [q["title_slug"] for q in previous_questions]
         valid_questions = list(
-            filter(lambda q: q["title_slug"] not in previous_question_slugs, questions)
+            filter(lambda q: q["title_slug"]
+                   not in previous_question_slugs, questions)
         )
         random.shuffle(valid_questions)
         weekly_questions = []
@@ -248,7 +253,8 @@ Supported commands:
         if len(parts) == 0:
             errors.append("Invalid command, no input given")
         elif parts[0] not in self.VALID_COMMANDS:
-            errors.append(f"`{parts[0]}` is not a currently supported command.")
+            errors.append(
+                f"`{parts[0]}` is not a currently supported command.")
         else:
             action = parts[0]
             args = parts[1:]
