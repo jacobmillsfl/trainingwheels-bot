@@ -49,7 +49,7 @@ class LeetcodeUtil:
                 formatted_question = {
                     "id": question['stat']['question_id'],
                     "title": question['stat']['question__title'],
-                    "titleSlug": question['stat']['question__title_slug'],
+                    "title_slug": question['stat']['question__title_slug'],
                     "difficulty": question['difficulty']['level'],
                 }
 
@@ -86,6 +86,175 @@ class LeetcodeUtil:
         return query_recent_stats
 
     @staticmethod
+    def query_builder_user_rank(leetcode_username: str):
+        """
+        Builds a leetcode query to gather the provided user's rank
+        """
+        query_user_rank = {
+            "query": """
+                query getUserProfile($username: String!) { 
+                    allQuestionsCount { 
+                        difficulty count 
+                    } matchedUser(username: $username) { 
+                        contributions { 
+                            points 
+                        } profile { 
+                            reputation ranking 
+                        } submissionCalendar submitStats { 
+                            acSubmissionNum { 
+                                difficulty count submissions 
+                            } totalSubmissionNum { 
+                                difficulty count submissions 
+                            } 
+                        } 
+                    } 
+                }
+            """,
+            "variables": {
+                "username": leetcode_username
+            }
+        }
+        return query_user_rank
+
+    @staticmethod
+    def query_builder_user_submissions(leetcode_username: str, offset: int, skip: int):
+        """
+        Builds a leetcode query to gather the provided user's submissions
+        """
+        query_user_submissions = {
+            "query": """
+                query userSolutionTopics($username: String!, $orderBy: TopicSortingOption, $skip: Int, $first: Int) {
+                    userSolutionTopics(
+                        username: $username
+                        orderBy: $orderBy
+                        skip: $skip
+                        first: $first
+                    ) {
+                        pageInfo {
+                            hasNextPage
+                        }
+                        edges {
+                            node {
+                                id
+                                title
+                                url
+                                viewCount
+                                questionTitle
+                                post {
+                                    creationDate
+                                    voteCount
+                                }
+                            }
+                        }
+                    }
+                }
+            """,
+            "variables": {
+                "username": leetcode_username,
+                "orderBy": "newest_to_oldest",
+                "skip": skip,
+                "first": offset
+            }
+        }
+        return query_user_submissions
+
+    @staticmethod
+    def query_builder_solution_by_id(solution_id: int):
+        """
+        Builds a leetcode query to gather a specific submission
+        """
+        query_submission = {
+            "query": """
+                query communitySolution($topicId: Int!) {
+                    isSolutionTopic(id: $topicId)
+                    topic(id: $topicId) {
+                        id
+                        viewCount
+                        topLevelCommentCount
+                        favoriteCount
+                        subscribed
+                        title
+                        pinned
+                        solutionTags {
+                            name
+                            slug
+                        }
+                        hideFromTrending
+                        commentCount
+                        isFavorite
+                        post {
+                            id
+                            voteCount
+                            voteStatus
+                            content
+                            updationDate
+                            creationDate
+                            status
+                            isHidden
+                        author {
+                            isDiscussAdmin
+                            isDiscussStaff
+                            username
+                            nameColor
+                            activeBadge {
+                                displayName
+                                icon
+                            }
+                            profile {
+                                userAvatar
+                                reputation
+                            }
+                            isActive
+                        }
+                        authorIsModerator
+                        isOwnPost
+                    }
+                }
+            }
+            """,
+            "variables": {
+                "topicId": solution_id
+            }
+        }
+        return query_submission
+
+    @staticmethod
+    def get_user_rank(leetcode_username: str) -> str:
+        """
+        Gathers the provided user's rank
+        """
+
+        rank = ""
+        query = LeetcodeUtil.query_builder_user_rank(leetcode_username)
+        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+        if response.ok:
+            data = response.json()
+            if len(data) == 0:
+                rank = "Unable to find rank information for Leetcode username" \
+                    f" `{leetcode_username}`"
+            else:
+                submissions = data["data"]["matchedUser"]["submitStats"]["acSubmissionNum"]
+                submissions_easy = list(filter(lambda x: x["difficulty"] == "Easy" , submissions))
+                submissions_med = list(filter(lambda x: x["difficulty"] == "Medium" , submissions))
+                submissions_hard = list(filter(lambda x: x["difficulty"] == "Hard" , submissions))
+                easy_count = submissions_easy.pop()["count"] if len(submissions_easy) > 0 else 0
+                med_count = submissions_med.pop()["count"] if len(submissions_med) > 0 else 0
+                hard_count = submissions_hard.pop()["count"] if len(submissions_hard) > 0 else 0
+                rank = f"""
+Name:                {leetcode_username}
+Ranking:             {data['data']['matchedUser']['profile']['ranking']}
+Contribution Points: {data['data']['matchedUser']['contributions']['points']}
+Easy Challenges:     {easy_count}
+Medium Challenges:   {med_count}
+Hard Challenges:     {hard_count}
+"""
+
+        else:
+            rank = f"Leetcode API Error {response.status_code}"
+
+        return rank
+
+    @staticmethod
     def get_recent_submissions(leetcode_username: str) -> list:
         """
         Gathers the provided user's recent submissions
@@ -100,7 +269,7 @@ class LeetcodeUtil:
             for question in questions:
                 completion = {
                     "title": question["title"],
-                    "titleSlug": question["titleSlug"]
+                    "title_slug": question["titleSlug"]
                 }
                 recent_completions.append(completion)
         else:
@@ -115,53 +284,63 @@ class LeetcodeUtil:
         """
         submissions = LeetcodeUtil.get_recent_submissions(leetcode_id)
         for submission in submissions:
-            if submission["titleSlug"] == title_slug:
+            if submission["title_slug"] == title_slug:
                 return True
         return False
 
-    def weeklychallenge_generate(self) -> bool:
+    @staticmethod
+    def get_solution_by_id(solution_id: int) -> str:
         """
-        Generates a new weekly challenge with 3 questions that have not been used before.
+        Gather's a published Leetcode question solutions, including code
         """
-
-        previous_challenge = self.database.table_weeklychallenge_getlatest()
-        if previous_challenge is None:
-            challenge_id = 1
-        else:
-            challenge_id = previous_challenge["id"] + 1
-
-        weight = 0
-        max_weight = 5
-        easy_weight = 1
-        medium_weight = 2
-        hard_weight = 3
-
-        questions = []
-
-        while weight < max_weight and len(questions) < 3:
-            #Adjust randint() range to adjust probabilities of each difficulty
-            difficulty_selector = randint(0,3)
-            if difficulty_selector == 3 and max_weight - weight >= hard_weight:
-                question = self.database.table_leetcodequestion_getrandom_newby_difficulty("hard")
-                formatted_question = {challenge_id, question["title_slug"]}
-                questions.append(formatted_question)
-                weight += hard_weight
-            elif difficulty_selector > 1 and max_weight - weight >= medium_weight:
-                question = self.database.table_leetcodequestion_getrandom_newby_difficulty("medium")
-                formatted_question = {challenge_id, question["title_slug"]}
-                questions.append(formatted_question)
-                weight += medium_weight
+        query = LeetcodeUtil.query_builder_solution_by_id(solution_id)
+        response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+        solution = ""
+        if response.ok:
+            response_json = response.json()
+            if "errors" in response_json.keys():
+                print("\n".join(response_json["errors"]))
             else:
-                question = self.database.table_leetcodequestion_getrandom_newby_difficulty("easy")
-                formatted_question = {challenge_id, question["title_slug"]}
-                questions.append(formatted_question)
-                weight += easy_weight
+                tags = [tag["slug"] for tag in response_json["data"]["topic"]["solutionTags"]]
+                tag_str = "\t".join(tags)
+                code = response_json["data"]["topic"]["post"]["content"]
+                solution = f"{tag_str}\n\n{code}"
+        else:
+            print(f"Response returned status code : {response.status_code}")
+        return solution
 
-        timestamp = int(datetime.utcnow().timestamp())
-        date = datetime.fromtimestamp(timestamp)
-        self.database.table_weeklychallenge_insert(challenge_id, date)
+    @staticmethod
+    def get_user_solutions(leetcode_id: str) -> str:
+        """
+        Returns a list of all public solutions created by a Leetcode user
+        """
+        solutions = []
+        nextPage = True
+        offset = 0
+        skip = LeetcodeUtil.DATA_LIMIT
+        while nextPage:
+            query = LeetcodeUtil.query_builder_user_submissions(leetcode_id, offset, skip)
+            response = requests.get(LeetcodeUtil.GRAPH_URL, json=query, timeout=10000)
+            if response.ok:
+                response_json = response.json()
+                if "errors" in response_json.keys():
+                    print("\n".join(response_json["errors"]))
+                    break
+                data = response_json["data"]
+                nextPage = data["userSolutionTopics"]["pageInfo"]["hasNextPage"]
+                edges = data["userSolutionTopics"]["edges"]
+                offset += skip
+                for edge in edges:
+                    solution = {
+                        "id": int(edge["node"]["id"]),
+                        "title": edge["node"]["title"],
+                        "url": edge["node"]["url"],
+                        "questionTitle": edge["node"]["questionTitle"],
+                        "date": edge["node"]["post"]["creationDate"] * 1000
+                    }
+                    solution["code"] = LeetcodeUtil.get_solution_by_id(solution["id"])
+                    solutions.append(solution)
+            else:
+                print(f"Response returned status code : {response.status_code}")
 
-        for question in questions:
-            self.database.table_weeklyquestion_insert(question)
-
-        return len(questions) > 0
+        return solutions

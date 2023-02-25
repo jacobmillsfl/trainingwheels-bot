@@ -424,6 +424,9 @@ disable=raw-checker-failed,
         use-symbolic-message-instead,
         C0103, # This forces constants to be in UPPER_CASE; Removing because it is overzealous in identifying contants
         W0107, # There is nothing wrong with using `pass` while we stub out the work to be completed
+        R0904, # Not much to do about "too many public methods" until we refactor our classes
+        R0915, # Ignoring too many statements error until we refactor
+        E1121, # Ignoring too many position arguemnts error until we refactor
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

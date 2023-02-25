@@ -1,10 +1,12 @@
 """
     Datebase Utility module
 """
-
+from datetime import datetime
 from typing import List
 from random import randint
 from tinydb import TinyDB, where
+from tinydb.table import Document
+
 
 # Decorator for validating database insert methods
 def validate_insert(required_fields):
@@ -27,15 +29,21 @@ def validate_insert(required_fields):
         fields. The insert method body should still enforce uniqueness
         where appropriate.
     """
+
     def decorator(func):
         def wrapper(self, *args):
-            if isinstance(args[0], dict) \
-                and all(field in args[0].keys() for field in required_fields) \
-                and len(args[0].keys()) == len(required_fields):
+            if (
+                isinstance(args[0], dict)
+                and all(field in args[0].keys() for field in required_fields)
+                and len(args[0].keys()) == len(required_fields)
+            ):
                 return func(self, *args)
-            return False # Indicates validation failure
+            return False  # Indicates validation failure
+
         return wrapper
+
     return decorator
+
 
 # Database Utility Class Definition
 class DatabaseUtil:
@@ -50,10 +58,16 @@ class DatabaseUtil:
     TABLE_WEEKLY_QUESTION = "Weekly_Question"
 
     # Table Fields
-    TABLE_LEETCODE_QUESTION_FIELDS = ["id", "title", "titleSlug", "difficulty"]
+    TABLE_LEETCODE_QUESTION_FIELDS = ["id", "title", "title_slug", "difficulty"]
     TABLE_LEETCODE_USER_FIELDS = ["discord_id", "leetcode_id"]
     TABLE_WEEKLY_CHALLENGE_FIELDS = ["id", "date"]
-    TABLE_WEEKLY_QUESTION_FIELDS = ["challenge_id", "title_slug"]
+    TABLE_WEEKLY_QUESTION_FIELDS = [
+        "id",
+        "challenge_id",
+        "title",
+        "title_slug",
+        "difficulty",
+    ]
 
     def __init__(self, database_path):
         self.database_path = database_path
@@ -85,6 +99,16 @@ class DatabaseUtil:
                 inserts += 1
 
         return inserts
+
+    def table_leetcodequestion_load(self, question_id):
+        """
+        Loads a single item by discord id in the "Leetcode_User" database table
+        """
+        table = self.db.table(self.TABLE_LEETCODE_QUESTION)
+        questions = table.search(where("id") == question_id)
+        if len(questions) == 0:
+            return None
+        return questions[0]
 
     def table_leetcodequestion_loadall(self):
         """
@@ -182,10 +206,17 @@ class DatabaseUtil:
         return len(results) > 0
 
     @validate_insert(required_fields=TABLE_WEEKLY_CHALLENGE_FIELDS)
-    def table_weeklychallenge_insert(self, challenge_id, date):
+    def table_weeklychallenge_insert(self, item: dict) -> bool:
         """
-        Insert 
+        "Inserts an item to the Weekly_Challenge table"
         """
+        table = self.db.table(self.TABLE_WEEKLY_CHALLENGE)
+
+        # Prevent duplicate ID's
+        if len(table.search(where("id") == item["id"])) == 0:
+            table.insert(item)
+            return True
+        return False
 
     def table_weeklychallenge_load(self, challenge_id):
         """
@@ -212,7 +243,7 @@ class DatabaseUtil:
 
     def table_weeklychallenge_delete(self, challenge_id: int) -> bool:
         """
-        Deletes an item in the Weekly_Challenge database table and 
+        Deletes an item in the Weekly_Challenge database table and
         calls weeklyquestion_delete_by_challenge_id() to delete associated questions from
         Weekly_Question database table
         """
@@ -220,6 +251,36 @@ class DatabaseUtil:
         table = self.db.table(self.TABLE_WEEKLY_CHALLENGE)
         results = table.remove(where("id") == challenge_id)
         return len(results) > 0
+
+    def create_new_weekly_challenge(self, question_list: List[dict]) -> str:
+        """
+        Creates a new weekly challenge and weekly questions
+        """
+        message = ""
+        success = True
+        last_chal = self.table_weeklychallenge_getlatest()
+        if last_chal:
+            new_chal_id = last_chal["id"] + 1
+        else:
+            new_chal_id = 1
+        timestamp = datetime.timestamp(datetime.now())
+        challenge = {"id": new_chal_id, "date": timestamp}
+        chal_success = self.table_weeklychallenge_insert(challenge)
+        if chal_success:
+            for question in question_list:
+                weekly_question = {**question, "challenge_id": new_chal_id}
+                question_success = self.table_weeklyquestion_insert(weekly_question)
+                if not question_success:
+                    message += (
+                        f"Error creating weekly question `{question['title_slug']}`\n"
+                    )
+                    success = False
+        else:
+            message += "Error creating weekly challenge"
+            success = False
+        if success:
+            message = "Challenge created successfully!"
+        return message
 
     @validate_insert(required_fields=TABLE_WEEKLY_QUESTION_FIELDS)
     def table_weeklyquestion_insert(self, item: dict) -> bool:
@@ -267,3 +328,10 @@ class DatabaseUtil:
         table = self.db.table(self.TABLE_WEEKLY_QUESTION)
         results = table.remove(where("challenge_id") == challenge_id)
         return len(results) > 0
+
+    def table_weeklyquestion_loadall(self) -> List[Document]:
+        """
+        Loads all items in the Weekly_Question database table
+        """
+        table = self.db.table(self.TABLE_WEEKLY_QUESTION)
+        return table.all()
