@@ -251,12 +251,7 @@ Supported commands:
                     total_completions += completions
                     result += f"{title}\n\t{completions}/{len(users)} users completed\n"
                 group_percentage = int(
-                    (
-                        (total_completions / (len(users) * total_questions))
-                        if total_completions > 0
-                        else 0
-                    )
-                    * 100
+                    ((total_completions / (len(users) * total_questions))) * 100
                 )
                 result += f"Group completion: {group_percentage}%"
         return result
