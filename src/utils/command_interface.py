@@ -252,7 +252,7 @@ Supported commands:
                     result += f"{title}\n\t{completions}/{len(users)} users completed\n"
                 group_percentage = int(
                     (
-                        ((len(users) * total_questions) / total_completions)
+                        (total_completions / (len(users) * total_questions))
                         if total_completions > 0
                         else 0
                     )
