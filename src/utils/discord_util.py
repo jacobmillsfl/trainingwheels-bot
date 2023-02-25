@@ -118,5 +118,17 @@ class DiscordUtil(commands.Bot, CommandInterface):
 
             await ctx.channel.send(return_message)
 
+        @self.command("group-status", pass_context=True)
+        async def command_group_status(ctx: commands.Context):
+            return_message = ""
+            parsed_command = self.validate_command(ctx.message.content, "!group-status")
+            if len(parsed_command.errors) > 0:
+                return_message = "\n".join(parsed_command.errors)
+            else:
+                result = self.command_group_status()
+                return_message = result
+
+            await ctx.channel.send(return_message)
+
     def run(self):
         super(commands.Bot, self).run(self.token)

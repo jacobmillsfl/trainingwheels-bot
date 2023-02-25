@@ -10,6 +10,9 @@ Notice: This is a proof of concept for interacting with leetcode's API in Python
 """
 
 import requests
+import json
+
+from utils.database_util import DatabaseUtil
 
 graph_url = "https://leetcode.com/graphql/"
 problem_url = "https://leetcode.com/problems/"
@@ -18,7 +21,7 @@ headers = {
     "accept": "*/*",
     "accept-language": "en-US,en;q=0.9",
     "content-type": "application/json",
-    "origin": "https://leetcode.com"
+    "origin": "https://leetcode.com",
 }
 
 data_categorySlug = ""
@@ -26,11 +29,12 @@ data_skip = 0
 data_limit = 50
 data_filters = {}
 
-COMMA_DELIM = ', '
+COMMA_DELIM = ", "
 
 leetcode_username = ""
 
-query_all_problems = {"query": """
+query_all_problems = {
+    "query": """
     query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
     problemsetQuestionList: questionList(
         categorySlug: $categorySlug
@@ -60,14 +64,15 @@ query_all_problems = {"query": """
       }
     }""",
     "variables": {
-        "categorySlug":data_categorySlug,
-        "skip":data_skip,
-        "limit":data_limit,
-        "filters":data_filters
-    }
+        "categorySlug": data_categorySlug,
+        "skip": data_skip,
+        "limit": data_limit,
+        "filters": data_filters,
+    },
 }
 
-query_overall_stats = {"query":"""query getUserProfile($username: String!) { 
+query_overall_stats = {
+    "query": """query getUserProfile($username: String!) { 
     allQuestionsCount { 
         difficulty count 
     } matchedUser(username: $username) { 
@@ -84,9 +89,7 @@ query_overall_stats = {"query":"""query getUserProfile($username: String!) {
         } 
     } 
 }""",
-"variables": {
-    "username": leetcode_username
-    }
+    "variables": {"username": leetcode_username},
 }
 
 query_recent_stats = {
@@ -100,37 +103,50 @@ query_recent_stats = {
             }
         }
     """,
-    "variables": {
-        "username": leetcode_username,
-        "limit": data_limit
-    }
+    "variables": {"username": leetcode_username, "limit": data_limit},
 }
 
 
 def all_problems():
     response = requests.get(graph_url, headers=headers, json=query_all_problems)
 
-    if (response.ok):
+    if response.ok:
         parsed_response = json.loads(response.text)
-        print(f"Total questions: {parsed_response['data']['problemsetQuestionList']['total']}")
-        questions = parsed_response['data']['problemsetQuestionList']['questions']
+        print(
+            f"Total questions: {parsed_response['data']['problemsetQuestionList']['total']}"
+        )
+        questions = parsed_response["data"]["problemsetQuestionList"]["questions"]
         for question in questions:
             print(f"Title: {question['title']}")
             print(f"Difficulty: {question['difficulty']}")
-            print(f"Tags: {COMMA_DELIM.join(tag['name'] for tag in question['topicTags'])}")
+            print(
+                f"Tags: {COMMA_DELIM.join(tag['name'] for tag in question['topicTags'])}"
+            )
             print(f"URL: {problem_url}{question['titleSlug']}\n")
+
 
 def get_recent_user_stats():
     response = requests.get(graph_url, json=query_recent_stats)
     print(response.text)
 
+
 def get_all_user_stats():
     response = requests.get(graph_url, json=query_overall_stats)
     print(response.text)
 
-#get_recent_user_stats()
 
-from utils.leetcode_util import LeetcodeUtil
-leet = LeetcodeUtil()
-r = leet.get_user_solutions(leetcode_username)
-print(r)
+# get_recent_user_stats()
+
+# from utils.leetcode_util import LeetcodeUtil
+#
+# leet = LeetcodeUtil()
+# r = leet.get_user_solutions(leetcode_username)
+# print(r)
+
+from utils.command_interface import CommandInterface
+
+db = DatabaseUtil("db.json")
+comm = CommandInterface(db, False)
+
+res = comm.command_group_status()
+print(res)
