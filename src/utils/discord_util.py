@@ -20,7 +20,8 @@ class DiscordUtil(commands.Bot, CommandInterface):
         self.channel_id = kwargs["channel_id"]
 
         database = kwargs["database"]
-        CommandInterface.__init__(self, database, discord_mode=True)
+        leetcode = kwargs["leetcode"]
+        CommandInterface.__init__(self, database, leetcode, discord_mode=True)
 
         self.add_commands()
 
@@ -131,4 +132,4 @@ class DiscordUtil(commands.Bot, CommandInterface):
             await ctx.channel.send(return_message)
 
     def run(self):
-        super(commands.Bot, self).run(self.token)
+        commands.Bot.run(self, self.token)
