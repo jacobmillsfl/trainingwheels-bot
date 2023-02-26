@@ -15,20 +15,19 @@ class LeetcodeUtil:
     GRAPH_URL = "https://leetcode.com/graphql/"
     PROBLEM_URL = "https://leetcode.com/problems/"
     ALL_PROBLEMS_URL = "https://leetcode.com/api/problems/all/"
-    DATA_LIMIT = 100
-    TIMEOUT = 10000
 
-    def __init__(self):
-        pass
 
-    @staticmethod
-    def api_questions_loadall() -> List[dict]:
+    def __init__(self, data_limit=100, timeout=10000):
+        self.data_limit = data_limit
+        self.timeout = timeout
+
+    def api_questions_loadall(self) -> List[dict]:
         """
         Loads all questions from the leetcode API
         """
 
         results = []
-        response = requests.get(LeetcodeUtil.ALL_PROBLEMS_URL, timeout=LeetcodeUtil.TIMEOUT)
+        response = requests.get(self.ALL_PROBLEMS_URL, timeout=self.timeout)
 
         if response.ok:
             data = response.json()
@@ -52,16 +51,15 @@ class LeetcodeUtil:
 
         return results
 
-    @staticmethod
-    def get_user_rank(leetcode_username: str) -> str:
+    def get_user_rank(self, leetcode_username: str) -> str:
         """
         Gathers the provided user's rank
         """
 
         rank = ""
         query = QueryBuilder.query_builder_user_rank(leetcode_username)
-        response = requests.get(LeetcodeUtil.GRAPH_URL,
-                                json=query, timeout=10000)
+        response = requests.get(self.GRAPH_URL,
+                                json=query, timeout=self.timeout)
         if response.ok:
             data = response.json()
             if len(data) == 0:
@@ -95,16 +93,15 @@ Hard Challenges:     {hard_count}
 
         return rank
 
-    @staticmethod
-    def get_recent_submissions(leetcode_username: str) -> list:
+    def get_recent_submissions(self,leetcode_username: str) -> list:
         """
         Gathers the provided user's recent submissions
         """
 
         recent_completions = []
-        query = QueryBuilder.query_builder_recent_stats(leetcode_username, LeetcodeUtil.DATA_LIMIT)
-        response = requests.get(LeetcodeUtil.GRAPH_URL,
-                                json=query, timeout=LeetcodeUtil.TIMEOUT)
+        query = QueryBuilder.query_builder_recent_stats(leetcode_username, self.data_limit)
+        response = requests.get(self.GRAPH_URL,
+                                json=query, timeout=self.timeout)
         if response.ok:
             data = response.json()
             questions = data['data']['recentAcSubmissionList']
@@ -119,25 +116,23 @@ Hard Challenges:     {hard_count}
 
         return recent_completions
 
-    @staticmethod
-    def check_challenge_completion(leetcode_id: str, title_slug: str) -> bool:
+    def check_challenge_completion(self, leetcode_id: str, title_slug: str) -> bool:
         """
         Determines if a user has completed a given challenge
         """
-        submissions = LeetcodeUtil.get_recent_submissions(leetcode_id)
+        submissions = self.get_recent_submissions(leetcode_id)
         for submission in submissions:
             if submission["title_slug"] == title_slug:
                 return True
         return False
 
-    @staticmethod
-    def get_solution_by_id(solution_id: int) -> str:
+    def get_solution_by_id(self, solution_id: int) -> str:
         """
         Gather's a published Leetcode question solutions, including code
         """
         query = QueryBuilder.query_builder_solution_by_id(solution_id)
-        response = requests.get(LeetcodeUtil.GRAPH_URL,
-                                json=query, timeout=LeetcodeUtil.TIMEOUT)
+        response = requests.get(self.GRAPH_URL,
+                                json=query, timeout=self.timeout)
         solution = ""
         if response.ok:
             response_json = response.json()
@@ -153,20 +148,19 @@ Hard Challenges:     {hard_count}
             print(f"Response returned status code : {response.status_code}")
         return solution
 
-    @staticmethod
-    def get_user_solutions(leetcode_id: str) -> str:
+    def get_user_solutions(self, leetcode_id: str) -> str:
         """
         Returns a list of all public solutions created by a Leetcode user
         """
         solutions = []
         next_page = True
         offset = 0
-        skip = LeetcodeUtil.DATA_LIMIT
+        skip = self.data_limit
         while next_page:
             query = QueryBuilder.query_builder_user_submissions(
                 leetcode_id, offset, skip)
             response = requests.get(
-                LeetcodeUtil.GRAPH_URL, json=query, timeout=LeetcodeUtil.TIMEOUT)
+                self.GRAPH_URL, json=query, timeout=self.timeout)
             if response.ok:
                 response_json = response.json()
                 if "errors" in response_json.keys():
@@ -184,7 +178,7 @@ Hard Challenges:     {hard_count}
                         "questionTitle": edge["node"]["questionTitle"],
                         "date": edge["node"]["post"]["creationDate"] * 1000
                     }
-                    solution["code"] = LeetcodeUtil.get_solution_by_id(
+                    solution["code"] = self.get_solution_by_id(
                         solution["id"])
                     solutions.append(solution)
             else:

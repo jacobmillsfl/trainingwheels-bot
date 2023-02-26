@@ -6,7 +6,9 @@ class QueryBuilder:
     Query Builder to help build Leetcode queries within leetcode_util.py
     """
 
+
     # helper function to build the query specific to the user calling the command
+
     @staticmethod
     def query_builder_recent_stats(leetcode_username: str, data_limit: int):
         """
@@ -14,7 +16,7 @@ class QueryBuilder:
         """
 
         query_recent_stats = {
-        "query": """
+            "query": """
             query recentAcSubmissions($username: String!, $limit: Int!) {
                 recentAcSubmissionList(username: $username, limit: $limit) {
                     id
@@ -24,10 +26,10 @@ class QueryBuilder:
                 }
             }
         """,
-        "variables": {
-            "username": leetcode_username,
-            "limit": data_limit
-        }
+            "variables": {
+                "username": leetcode_username,
+                "limit": data_limit
+            }
         }
         return query_recent_stats
 

@@ -18,6 +18,7 @@ if __name__ == "__main__":
     DISCORD_AUTH_TOKEN = config.get("DISCORD_AUTH_TOKEN")
     CHANNEL_ID = config.get("CHANNEL_ID")
     database = DatabaseUtil(config.get("DATABASE_NAME"))
+    leetcode = LeetcodeUtil()
 
     command_parser = argparse.ArgumentParser(
         prog="TrainingWheels Bot",
@@ -46,17 +47,17 @@ if __name__ == "__main__":
 
     if args.update:
         print("Updating Leetcode questions in our database...")
-        new_questions = LeetcodeUtil.api_questions_loadall()
+        new_questions = leetcode.api_questions_loadall()
         count = database.table_leetcodequestion_insert_many(new_questions)
         print(f"Inserted {count} new questions into the database")
 
     if args.discord:
         print("Running in Discord mode")
         bot = DiscordUtil(
-            database=database, token=DISCORD_AUTH_TOKEN, channel_id=CHANNEL_ID
+            database=database, token=DISCORD_AUTH_TOKEN, channel_id=CHANNEL_ID, leetcode=leetcode
         )
     else:
-        bot = StandaloneUtil(database=database)
+        bot = StandaloneUtil(database=database, leetcode=leetcode)
 
     # Once implemented within discord_util.py & standalone_util.py, enable bot.run()
     bot.run()

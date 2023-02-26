@@ -19,7 +19,7 @@ class StandaloneUtil(CommandInterface):
     def __init__(self, **kwargs):
         if "database" not in kwargs:
             raise ValueError("Database required to construct a StandaloneUtil object")
-        super().__init__(kwargs["database"])
+        super().__init__(kwargs["database"], kwargs["leetcode"])
         # Add Standalone only data
         for command, description in self.DEBUG_COMMANDS.items():
             self.VALID_COMMANDS.append(command)

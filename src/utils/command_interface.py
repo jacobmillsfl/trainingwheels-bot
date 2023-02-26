@@ -4,7 +4,7 @@ Command Interface module
 import random
 from datetime import datetime
 
-from utils.database_util import DatabaseUtil
+from .database_util import DatabaseUtil
 from .leetcode_util import LeetcodeUtil
 from .emojis import Emojis
 
@@ -61,9 +61,10 @@ Supported commands:
 !group-status           -   Display all users' completion status of current weekly challenge
 """
 
-    def __init__(self, database: DatabaseUtil, discord_mode=False):
+    def __init__(self, database: DatabaseUtil, leetcode: LeetcodeUtil, discord_mode=False):
         self.database = database
         self.discord_mode = discord_mode
+        self.leetcode = leetcode
         self.reaction_complete = Emojis.check_mark if discord_mode else "Complete"
         self.reaction_incomplete = Emojis.red_x if discord_mode else "Incomplete"
 
@@ -141,7 +142,7 @@ Supported commands:
         user = self.database.table_leetcodeuser_load_by_discord_id(discord_id)
         if user:
             leetcode_user_id = user["leetcode_id"]
-            result = LeetcodeUtil.get_user_rank(leetcode_user_id)
+            result = self.leetcode.get_user_rank(leetcode_user_id)
         else:
             result = (
                 "Leetcode user not found. Claim your user idea with"
@@ -174,7 +175,7 @@ Supported commands:
                 else:
                     completed = 0
                     for question in questions:
-                        question["complete"] = LeetcodeUtil.check_challenge_completion(
+                        question["complete"] = self.leetcode.check_challenge_completion(
                             leetcode_user_id, question["title_slug"]
                         )
                         if question["complete"]:
@@ -256,7 +257,7 @@ Supported commands:
                         [
                             user
                             for user in users
-                            if LeetcodeUtil.check_challenge_completion(
+                            if self.leetcode.check_challenge_completion(
                                 user["leetcode_id"], question["title_slug"]
                             )
                         ]
@@ -273,7 +274,7 @@ Supported commands:
         """
         Awaits for commands and processes them as received
         """
-        pass
+        # pass
 
     def validate_command(self, command: str, expected_command: str):
         """
