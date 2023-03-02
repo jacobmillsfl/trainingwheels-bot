@@ -12,7 +12,7 @@ Notice: This is a proof of concept for interacting with leetcode's API in Python
 import requests
 import json
 
-from utils.database_util import DatabaseUtil
+from utils.database.database_util import DatabaseUtil
 
 graph_url = "https://leetcode.com/graphql/"
 problem_url = "https://leetcode.com/problems/"
@@ -137,16 +137,21 @@ def get_all_user_stats():
 
 # get_recent_user_stats()
 
-# from utils.leetcode_util import LeetcodeUtil
+from utils.leetcode_util import LeetcodeUtil
+from utils.command_interface import CommandInterface
+
 #
-# leet = LeetcodeUtil()
+leet = LeetcodeUtil()
 # r = leet.get_user_solutions(leetcode_username)
 # print(r)
-
-from utils.command_interface import CommandInterface
 
 db = DatabaseUtil("db.json")
 comm = CommandInterface(db, False)
 
-res = comm.command_group_status()
-print(res)
+questions = leet.api_questions_loadall();
+
+db.leetcode_questions.insert_many(questions)
+
+
+questions = db.leetcode_questions.loadall()
+

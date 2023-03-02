@@ -5,7 +5,7 @@
 import argparse
 from dotenv import dotenv_values
 
-from utils.database_util import DatabaseUtil
+from utils.database.database_util import DatabaseUtil
 from utils.discord_util import DiscordUtil
 from utils.leetcode_util import LeetcodeUtil
 from utils.standalone_util import StandaloneUtil
