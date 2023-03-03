@@ -98,7 +98,7 @@ class DiscordUtil(commands.Bot, CommandAbstract):
                     "discord_id": discord_id,
                     "leetcode_id": leetcode_id
                 }
-                result = self._claim(discord_id, **kwargs)
+                result = self._claim(**kwargs)
                 return_message = result
 
             await ctx.channel.send(return_message)
@@ -128,7 +128,8 @@ class DiscordUtil(commands.Bot, CommandAbstract):
             if len(parsed_command.errors) > 0:
                 return_message = "\n".join(parsed_command.errors)
             else:
-                result = self._rank(discord_id)
+                kwargs = {"discord_id": discord_id}
+                result = self._rank(**kwargs)
                 return_message = result
 
             await ctx.channel.send(return_message)
@@ -172,7 +173,8 @@ class DiscordUtil(commands.Bot, CommandAbstract):
             if len(parsed_command.errors) > 0:
                 return_message = "\n".join(parsed_command.errors)
             else:
-                result = self._user(discord_id)
+                kwargs = {"discord_id": discord_id}
+                result = self._user(kwargs)
                 return_message = result
 
             await ctx.channel.send(return_message)
