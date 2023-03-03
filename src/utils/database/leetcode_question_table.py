@@ -5,7 +5,7 @@ Leetcode Question table module
 from typing import List
 from tinydb import TinyDB, where
 from tinydb.table import Document
-from .db_decorators import DatabaseDecorator
+from .db_decorators import validate_insert
 
 class LeetcodeQuestionsTable():
     """
@@ -17,8 +17,7 @@ class LeetcodeQuestionsTable():
     def __init__(self, database: TinyDB):
         self.table = database.table(self.TABLE_LEETCODE_QUESTION)
 
-    # @validate_insert(required_fields=TABLE_LEETCODE_QUESTION_FIELDS)
-    @DatabaseDecorator.validate_insert(required_fields=TABLE_LEETCODE_QUESTION_FIELDS)
+    @validate_insert(required_fields=TABLE_LEETCODE_QUESTION_FIELDS)
     def insert(self, item: dict) -> bool:
         """
         Inserts an item into the Leetcode_Question database table

@@ -5,7 +5,7 @@ User Table module
 from typing import List
 from tinydb import TinyDB, where
 from tinydb.table import Document
-from .db_decorators import DatabaseDecorator
+from .db_decorators import validate_insert
 
 class UsersTable():
     """
@@ -23,7 +23,7 @@ class UsersTable():
         """
         return self.table.all()
 
-    @DatabaseDecorator.validate_insert(required_fields=TABLE_LEETCODE_USER_FIELDS)
+    @validate_insert(required_fields=TABLE_LEETCODE_USER_FIELDS)
     def insert(self, item: dict) -> bool:
         """
         Inserts a collection of items in the LeetcodeUser database table

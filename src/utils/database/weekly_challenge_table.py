@@ -3,7 +3,7 @@ Weekly Challenge table module
 """
 
 from tinydb import TinyDB, where
-from .db_decorators import DatabaseDecorator
+from .db_decorators import validate_insert
 
 class WeeklyChallengeTable():
     """
@@ -15,7 +15,7 @@ class WeeklyChallengeTable():
     def __init__(self, database: TinyDB):
         self.table = database.table(self.TABLE_WEEKLY_CHALLENGE)
 
-    @DatabaseDecorator.validate_insert(required_fields=TABLE_WEEKLY_CHALLENGE_FIELDS)
+    @validate_insert(required_fields=TABLE_WEEKLY_CHALLENGE_FIELDS)
     def insert(self, item: dict) -> bool:
         """
         "Inserts an item to the Weekly_Challenge table"
