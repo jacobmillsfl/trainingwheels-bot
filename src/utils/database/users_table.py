@@ -11,11 +11,11 @@ class UsersTable():
     """
     Table to hold all registered users
     """
-    TABLE_LEETCODE_USER_FIELDS = ["discord_id", "leetcode_id"]
-    TABLE_LEETCODE_USER = "Leetcode_User"
+    TABLE_FIELDS = ["discord_id", "leetcode_id"]
+    TABLE_NAME = "Leetcode_User"
 
     def __init__(self, database: TinyDB):
-        self.table = database.table(self.TABLE_LEETCODE_USER)
+        self.table = database.table(self.TABLE_NAME)
 
     def loadall(self) -> List[Document]:
         """
@@ -23,7 +23,7 @@ class UsersTable():
         """
         return self.table.all()
 
-    @validate_insert(required_fields=TABLE_LEETCODE_USER_FIELDS)
+    @validate_insert(required_fields=TABLE_FIELDS)
     def insert(self, item: dict) -> bool:
         """
         Inserts a collection of items in the LeetcodeUser database table

@@ -9,13 +9,13 @@ class WeeklyChallengeTable():
     """
     Table to hold all Weekly Challenges after being generated
     """
-    TABLE_WEEKLY_CHALLENGE_FIELDS = ["id", "date"]
-    TABLE_WEEKLY_CHALLENGE = "Weekly_Challenge"
+    TABLE_FIELDS = ["id", "date"]
+    TABLE_NAME = "Weekly_Challenge"
 
     def __init__(self, database: TinyDB):
-        self.table = database.table(self.TABLE_WEEKLY_CHALLENGE)
+        self.table = database.table(self.TABLE_NAME)
 
-    @validate_insert(required_fields=TABLE_WEEKLY_CHALLENGE_FIELDS)
+    @validate_insert(required_fields=TABLE_FIELDS)
     def insert(self, item: dict) -> bool:
         """
         "Inserts an item to the Weekly_Challenge table"

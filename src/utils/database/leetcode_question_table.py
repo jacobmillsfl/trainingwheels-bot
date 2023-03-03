@@ -11,13 +11,13 @@ class LeetcodeQuestionsTable():
     """
     Table to hold all questions pulled from Leetcode
     """
-    TABLE_LEETCODE_QUESTION_FIELDS = ["id", "title", "title_slug", "difficulty"]
-    TABLE_LEETCODE_QUESTION = "Leetcode_Question"
+    TABLE_FIELDS = ["id", "title", "title_slug", "difficulty"]
+    TABLE_NAME = "Leetcode_Question"
 
     def __init__(self, database: TinyDB):
-        self.table = database.table(self.TABLE_LEETCODE_QUESTION)
+        self.table = database.table(self.TABLE_NAME)
 
-    @validate_insert(required_fields=TABLE_LEETCODE_QUESTION_FIELDS)
+    @validate_insert(required_fields=TABLE_FIELDS)
     def insert(self, item: dict) -> bool:
         """
         Inserts an item into the Leetcode_Question database table

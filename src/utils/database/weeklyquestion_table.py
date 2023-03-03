@@ -11,20 +11,20 @@ class WeeklyQuestionTable:
     """
     A class to act on the weeklyquestion_table of the database
     """
-    TABLE_WEEKLY_QUESTION_FIELDS = [
+    TABLE_FIELDS = [
         "id",
         "challenge_id",
         "title",
         "title_slug",
         "difficulty",
     ]
-    TABLE_WEEKLY_QUESTION = "Weekly_Question"
+    TABLE_NAME = "Weekly_Question"
 
     def __init__(self, database: TinyDB):
-        self.table = database.table(self.TABLE_WEEKLY_QUESTION)
+        self.table = database.table(self.TABLE_NAME)
 
 
-    @validate_insert(required_fields=TABLE_WEEKLY_QUESTION_FIELDS)
+    @validate_insert(required_fields=TABLE_FIELDS)
     def insert(self, item: dict) -> bool:
         """
         Inserts an item into the Weekly_Question database table
