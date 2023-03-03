@@ -138,7 +138,7 @@ def get_all_user_stats():
 # get_recent_user_stats()
 
 from utils.leetcode_util import LeetcodeUtil
-from utils.command_interface import CommandInterface
+from utils.commands.command_util import CommandUtil
 
 #
 leet = LeetcodeUtil()
@@ -146,9 +146,9 @@ leet = LeetcodeUtil()
 # print(r)
 
 db = DatabaseUtil("db.json")
-comm = CommandInterface(db, False)
+comm = CommandUtil(db, False)
 
-questions = leet.api_questions_loadall();
+questions = leet.api_questions_loadall()
 
 db.leetcode_questions.insert_many(questions)
 

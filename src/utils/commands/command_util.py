@@ -1,55 +1,20 @@
 """
-Command Interface module
+Command Utility module
 """
 import random
 from datetime import datetime
 
-from .database.database_util import DatabaseUtil
-from .leetcode_util import LeetcodeUtil
-from .emojis import Emojis
+#from .command_abc import CommandAbstract
+from ..database.database_util import DatabaseUtil
+from ..leetcode_util import LeetcodeUtil
+from ..emojis import Emojis
+from ..misc.maps import QUESTION_DIFFICULTY_MAP
 
-QUESTION_DIFFICULTY_MAP = {1: "Easy", 2: "Medium", 3: "Hard"}
-
-
-class BotCommand:
-    """
-    A class for storing the data that make up a bot command
-    """
-
-    def __init__(self, action, args, errors):
-        self.action = action
-        self.args = args
-        self.errors = errors
-        self.result = ""
-
-    def get_result(self):
-        """
-        Shows the current results of a BotCommand instance
-        """
-        return self.result
-
-    def add_error(self, error_message) -> None:
-        """
-        Adds an error string to the error message list
-        """
-        self.errors.append(error_message)
-
-
-class CommandInterface:
+class CommandUtil():
     """
     An interface for classes that will support leetcode bot commands
     """
 
-    VALID_COMMANDS = [
-        "!user",
-        "!help",
-        "!claim",
-        "!challenge",
-        "!rank",
-        "!status",
-        "!new-challenge",
-        "!group-status",
-    ]
     USAGE_MESSAGE = """
 Supported commands:
 !help                   -   Display help information
@@ -68,7 +33,7 @@ Supported commands:
         self.reaction_complete = Emojis.check_mark if discord_mode else "Complete"
         self.reaction_incomplete = Emojis.red_x if discord_mode else "Incomplete"
 
-    def command_claim(self, discord_id: str, leetcode_id: str) -> str:
+    def claim(self, discord_id: str, leetcode_id: str) -> str:
         """
         Associates a leetcode_id with a discord_id in the Leetcode_User table.
         Local only, no API required.
@@ -105,7 +70,7 @@ Supported commands:
                 message += f"Error: {leetcode_id} already in use!\n"
         return message
 
-    def command_challenge(self) -> str:
+    def challenge(self) -> str:
         """
         Determines the current weekly challenge.
         Local only, no API required.
@@ -127,7 +92,7 @@ Supported commands:
             result = "There are no challenges at this time"
         return result
 
-    def command_rank(self, discord_id: str) -> str:
+    def rank(self, discord_id: str) -> str:
         """
         Determines a summary of leet stats for the current user.
         Calls the `rank`/`stats` leetcode API and returns results.
@@ -144,7 +109,7 @@ Supported commands:
             )
         return result
 
-    def command_status(self, discord_id: str) -> str:
+    def status(self, discord_id: str) -> str:
         """
         Determines the completion status of each question in the current
         weekly challenge for the given leetcode_user_id. Calls the
@@ -185,7 +150,7 @@ Supported commands:
             result += " `!claim <leetcode_username>`"
         return result
 
-    def command_new_challenge(self) -> str:
+    def new_challenge(self) -> str:
         """
         Generates a new Weekly Challenge
         """
@@ -208,7 +173,7 @@ Supported commands:
         # Insert new questions into datbase
         return self.database.create_new_weekly_challenge(weekly_questions)
 
-    def command_user(self, discord_id: str) -> str:
+    def user(self, discord_id: str) -> str:
         """
         Gets the leetcode_id of the requested user
         """
@@ -220,7 +185,7 @@ Supported commands:
             return_message = user["leetcode_id"]
         return return_message
 
-    def command_group_status(self) -> str:
+    def group_status(self) -> str:
         """
         Calculates and summarizes the number of users who have completed each question
         in the current challenge
@@ -264,38 +229,4 @@ Supported commands:
         """
         Awaits for commands and processes them as received
         """
-        # pass
-
-    def validate_command(self, command: str, expected_command: str):
-        """
-        Ensures that the action matches the intended command
-        """
-        parsed_command = self.parse_command(command)
-        if parsed_command.action and parsed_command.action != expected_command:
-            parsed_command.errors.append(
-                f"Unexpected command {parsed_command.action}, expected: {expected_command}"
-            )
-        return parsed_command
-
-    def parse_command(self, command: str) -> BotCommand:
-        """
-        Parses and validates a given command
-        """
-        action = ""
-        args = ""
-        errors = []
-
-        parts = command.split(" ")
-        if len(parts) == 0:
-            errors.append("Invalid command, no input given")
-        elif parts[0] not in self.VALID_COMMANDS:
-            errors.append(
-                f"`{parts[0]}` is not a currently supported command.")
-        else:
-            action = parts[0]
-            args = parts[1:]
-
-        if action == "!claim" and len(args) == 0:
-            errors.append("Invalid syntax for command `!claim`")
-
-        return BotCommand(action, args, errors)
+        pass
