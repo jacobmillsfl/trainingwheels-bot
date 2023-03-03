@@ -17,17 +17,6 @@ class LeetcodeQuestionsTable():
     def __init__(self, database: TinyDB):
         self.table = database.table(self.TABLE_NAME)
 
-    @validate_insert(required_fields=TABLE_FIELDS)
-    def insert(self, item: dict) -> bool:
-        """
-        Inserts an item into the Leetcode_Question database table
-        """
-        # Prevent duplicate ID's
-        if len(self.table.search(where("id") == item["id"])) == 0:
-            self.table.insert(item)
-            return True
-        return False
-
     def insert_many(self, items: List[dict]) -> int:
         """
         Inserts a collection of items into the Leetcode_Question database
@@ -38,6 +27,17 @@ class LeetcodeQuestionsTable():
             if self.insert(item):
                 inserts += 1
         return inserts
+
+    @validate_insert(required_fields=TABLE_FIELDS)
+    def insert(self, item: dict) -> bool:
+        """
+        Inserts an item into the Leetcode_Question database table
+        """
+        # Prevent duplicate ID's
+        if len(self.table.search(where("id") == item["id"])) == 0:
+            self.table.insert(item)
+            return True
+        return False
 
     def load(self, question_id):
         """
