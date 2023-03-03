@@ -4,7 +4,7 @@ Command Interface module
 import random
 from datetime import datetime
 
-from .database_util import DatabaseUtil
+from .database.database_util import DatabaseUtil
 from .leetcode_util import LeetcodeUtil
 from .emojis import Emojis
 
@@ -76,10 +76,8 @@ Supported commands:
         """
         message = ""
         create_user = False
-        claimed_user = self.database.table_leetcodeuser_load_by_leetcode_id(
-            leetcode_id)
-        existing_user = self.database.table_leetcodeuser_load_by_discord_id(
-            discord_id)
+        claimed_user = self.database.users.load_by_leetcode_id(leetcode_id)
+        existing_user = self.database.users.load_by_discord_id(discord_id)
         if claimed_user and claimed_user["discord_id"] != discord_id:
             message += f"`{claimed_user['leetcode_id']}` is already claimed!"
         elif existing_user and existing_user["leetcode_id"] == leetcode_id:
@@ -90,8 +88,7 @@ Supported commands:
                 f" `{existing_user['leetcode_id']}`\n"
             )
             message += "Deleting association... "
-            deleted = self.database.table_leetcodeuser_delete_by_discord_id(
-                discord_id)
+            deleted = self.database.users.delete_by_discord_id(discord_id)
             if deleted:
                 message += "Deletion success!\n"
                 create_user = True
@@ -101,7 +98,7 @@ Supported commands:
             create_user = True
         if create_user:
             user = {"discord_id": discord_id, "leetcode_id": leetcode_id}
-            success = self.database.table_leetcodeuser_insert(user)
+            success = self.database.users.insert(user)
             if success:
                 message += f"Leetcode Username `{leetcode_id}` successfully claimed!\n"
             else:
@@ -114,16 +111,13 @@ Supported commands:
         Local only, no API required.
         Database required.
         """
-        latest = self.database.table_weeklychallenge_getlatest()
+        latest = self.database.weekly_challenges.get_latest()
         if latest:
             start_date = datetime.fromtimestamp(latest["date"])
             result = f"* * * CHALLENGE {latest['id']} | {start_date.date()} * * *\n\n"
-
-            questions = self.database.table_weeklyquestion_load_by_challenge_id(
-                latest["id"]
-            )
+            questions = self.database.weekly_questions.load_by_challenge_id(latest["id"])
             for q in questions:
-                question = self.database.table_leetcodequestion_load(q["id"])
+                question = self.database.leetcode_questions.load(q["id"])
                 result += f"Question:\t{question['title']}\n"
                 result += (
                     f"Difficulty:\t{QUESTION_DIFFICULTY_MAP[question['difficulty']]}\n"
@@ -139,7 +133,7 @@ Supported commands:
         Calls the `rank`/`stats` leetcode API and returns results.
         No database required.
         """
-        user = self.database.table_leetcodeuser_load_by_discord_id(discord_id)
+        user = self.database.users.load_by_discord_id(discord_id)
         if user:
             leetcode_user_id = user["leetcode_id"]
             result = self.leetcode.get_user_rank(leetcode_user_id)
@@ -159,16 +153,14 @@ Supported commands:
         of current weekly challenges from the database.
         """
         result = ""
-        user = self.database.table_leetcodeuser_load_by_discord_id(discord_id)
+        user = self.database.users.load_by_discord_id(discord_id)
         if user:
             leetcode_user_id = user["leetcode_id"]
-            challenge = self.database.table_weeklychallenge_getlatest()
+            challenge = self.database.weekly_challenges.get_latest()
             if not challenge:
                 result += "No current challenges"
             else:
-                questions = self.database.table_weeklyquestion_load_by_challenge_id(
-                    challenge["id"]
-                )
+                questions = self.database.weekly_questions.load_by_challenge_id(challenge["id"])
                 total = len(questions)
                 if total == 0:
                     result += "No current weekly questions"
@@ -197,8 +189,8 @@ Supported commands:
         """
         Generates a new Weekly Challenge
         """
-        questions = self.database.table_leetcodequestion_loadall()
-        previous_questions = self.database.table_weeklyquestion_loadall()
+        questions = self.database.leetcode_questions.loadall()
+        previous_questions = self.database.weekly_questions.loadall()
         previous_question_slugs = [q["title_slug"] for q in previous_questions]
         valid_questions = list(
             filter(lambda q: q["title_slug"]
@@ -221,7 +213,7 @@ Supported commands:
         Gets the leetcode_id of the requested user
         """
         return_message = ""
-        user = self.database.table_leetcodeuser_load_by_discord_id(discord_id)
+        user = self.database.users.load_by_discord_id(discord_id)
         if not user:
             return_message = "User not found"
         else:
@@ -234,8 +226,8 @@ Supported commands:
         in the current challenge
         """
         result = ""
-        users = self.database.table_leetcodeuser_loadall()
-        challenge = self.database.table_weeklychallenge_getlatest()
+        users = self.database.users.loadall()
+        challenge = self.database.weekly_challenges.get_latest()
         if not challenge:
             result += "No current challenge"
         elif len(users) == 0:
@@ -243,9 +235,7 @@ Supported commands:
         else:
             date = datetime.fromtimestamp(challenge["date"])
             result += f"Challenge {challenge['id']} | {date.strftime('%Y-%m-%d')}\n"
-            questions = self.database.table_weeklyquestion_load_by_challenge_id(
-                challenge["id"]
-            )
+            questions = self.database.weekly_questions.load_by_challenge_id(challenge["id"])
             total_questions = len(questions)
             if total_questions == 0:
                 result += "Current challenge is empty"
