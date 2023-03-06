@@ -201,28 +201,35 @@ Supported commands:
             date = datetime.fromtimestamp(challenge["date"])
             result += f"Challenge {challenge['id']} | {date.strftime('%Y-%m-%d')}\n"
             questions = self.database.weekly_questions.load_by_challenge_id(challenge["id"])
-            total_questions = len(questions)
-            if total_questions == 0:
+            user_score = { user["leetcode_id"] : 0 for user in users }
+
+            if len(questions) == 0:
                 result += "Current challenge is empty"
             else:
                 total_completions = 0
                 for question in questions:
                     title = question["title"]
-                    completions = len(
-                        [
-                            user
-                            for user in users
-                            if self.leetcode.check_challenge_completion(
-                                user["leetcode_id"], question["title_slug"]
-                            )
-                        ]
-                    )
-                    total_completions += completions
+                    completions = 0
+                    for user in users:
+                        completed = self.leetcode.check_challenge_completion(
+                                    user["leetcode_id"],
+                                    question["title_slug"])
+                        if completed:
+                            user_score[user["leetcode_id"]] += question["difficulty"]
+                        total_completions += completions
                     result += f"{title}\n\t{completions}/{len(users)} users completed\n"
                 group_percentage = int(
-                    ((total_completions / (len(users) * total_questions))) * 100
+                    ((total_completions / (len(users) * len(questions)))) * 100
                 )
                 result += f"Group completion: {group_percentage}%"
+        if challenge:
+            for user in users:
+                stars = Emojis.star * user_score[user["leetcode_id"]]
+                # NOTICE: In the future all database methods should return a well-defined
+                #         object. That avoids having to do things like the following and
+                #         allows for direct access via dot-operator
+                LEETCODE_STR = "leetcode_id"
+                result += f"\t{user[LEETCODE_STR]}: {stars}"
         return result
 
     def run(self) -> None:
