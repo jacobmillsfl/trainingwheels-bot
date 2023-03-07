@@ -199,7 +199,7 @@ Supported commands:
             result += "No registered users"
         else:
             date = datetime.fromtimestamp(challenge["date"])
-            result += f"Challenge {challenge['id']} | {date.strftime('%Y-%m-%d')}\n"
+            result += f"**Challenge {challenge['id']} | {date.strftime('%Y-%m-%d')}**\n\n"
             questions = self.database.weekly_questions.load_by_challenge_id(challenge["id"])
             user_scores = { user["leetcode_id"] : 0 for user in users }
 
@@ -217,20 +217,20 @@ Supported commands:
                             user_scores[user["leetcode_id"]] += question["difficulty"]
                             completions += 1
                     total_completions += completions
-                    result += f"{question['title']}\n\t{completions}/{len(users)} users completed\n"
+                    result += f"{question['title']}\n\t*{completions}/{len(users)} users completed*\n"
                 group_percentage = int(
                     ((total_completions / (len(users) * len(questions)))) * 100
                 )
-                result += f"Group completion: {group_percentage}%"
+                result += f"\n**Group completion:** {group_percentage}%"
         if challenge:
-            result += "\n"
+            result += "\n\n"
             for user in users:
                 stars = Emojis.star * user_scores[user["leetcode_id"]]
                 # NOTICE: In the future all database methods should return a well-defined
                 #         object. That avoids having to do things like the following and
                 #         allows for direct access via dot-operator
                 LEETCODE_STR = "leetcode_id"
-                result += f"\n\t{user[LEETCODE_STR]}: {stars}"
+                result += f"\t{user[LEETCODE_STR]}: {stars}\n"
         return result
 
     def run(self) -> None:
