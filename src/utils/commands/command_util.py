@@ -201,30 +201,29 @@ Supported commands:
             date = datetime.fromtimestamp(challenge["date"])
             result += f"Challenge {challenge['id']} | {date.strftime('%Y-%m-%d')}\n"
             questions = self.database.weekly_questions.load_by_challenge_id(challenge["id"])
-            user_score = { user["leetcode_id"] : 0 for user in users }
+            user_scores = { user["leetcode_id"] : 0 for user in users }
 
             if len(questions) == 0:
                 result += "Current challenge is empty"
             else:
                 total_completions = 0
                 for question in questions:
-                    title = question["title"]
                     completions = 0
                     for user in users:
                         completed = self.leetcode.check_challenge_completion(
                                     user["leetcode_id"],
                                     question["title_slug"])
                         if completed:
-                            user_score[user["leetcode_id"]] += question["difficulty"]
+                            user_scores[user["leetcode_id"]] += question["difficulty"]
                         total_completions += completions
-                    result += f"{title}\n\t{completions}/{len(users)} users completed\n"
+                    result += f"{question['title']}\n\t{completions}/{len(users)} users completed\n"
                 group_percentage = int(
                     ((total_completions / (len(users) * len(questions)))) * 100
                 )
                 result += f"Group completion: {group_percentage}%"
         if challenge:
             for user in users:
-                stars = Emojis.star * user_score[user["leetcode_id"]]
+                stars = Emojis.star * user_scores[user["leetcode_id"]]
                 # NOTICE: In the future all database methods should return a well-defined
                 #         object. That avoids having to do things like the following and
                 #         allows for direct access via dot-operator
