@@ -215,7 +215,8 @@ Supported commands:
                                     question["title_slug"])
                         if completed:
                             user_scores[user["leetcode_id"]] += question["difficulty"]
-                            total_completions += completions
+                            completions += 1
+                    total_completions += completions
                     result += f"{question['title']}\n\t{completions}/{len(users)} users completed\n"
                 group_percentage = int(
                     ((total_completions / (len(users) * len(questions)))) * 100
