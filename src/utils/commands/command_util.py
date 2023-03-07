@@ -228,7 +228,7 @@ Supported commands:
                 #         object. That avoids having to do things like the following and
                 #         allows for direct access via dot-operator
                 LEETCODE_STR = "leetcode_id"
-                result += f"\t{user[LEETCODE_STR]}: {stars}"
+                result += f"\n\t{user[LEETCODE_STR]}: {stars}"
         return result
 
     def run(self) -> None:
