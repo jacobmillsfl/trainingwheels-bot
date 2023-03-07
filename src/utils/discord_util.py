@@ -181,6 +181,7 @@ class DiscordUtil(commands.Bot, CommandAbstract):
 
         @self.command("group-status", pass_context=True)
         async def group_status(ctx: commands.Context):
+            message = await ctx.channel.send("Checking group status...")
             return_message = ""
             discord_id = str(ctx.author.id)
             parsed_command = self.parser.parse(ctx.message.content, discord_id)
@@ -189,8 +190,7 @@ class DiscordUtil(commands.Bot, CommandAbstract):
             else:
                 result = self._group_status()
                 return_message = result
-
-            await ctx.channel.send(return_message)
+            await message.edit(content=return_message)
 
     def run(self):
         commands.Bot.run(self, self.token)
