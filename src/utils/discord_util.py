@@ -174,7 +174,7 @@ class DiscordUtil(commands.Bot, CommandAbstract):
                 return_message = "\n".join(parsed_command.errors)
             else:
                 kwargs = {"discord_id": discord_id}
-                result = self._user(kwargs)
+                result = self._user(**kwargs)
                 return_message = result
 
             await ctx.channel.send(return_message)

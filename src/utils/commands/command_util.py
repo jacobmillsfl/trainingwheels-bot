@@ -215,13 +215,14 @@ Supported commands:
                                     question["title_slug"])
                         if completed:
                             user_scores[user["leetcode_id"]] += question["difficulty"]
-                        total_completions += completions
+                            total_completions += completions
                     result += f"{question['title']}\n\t{completions}/{len(users)} users completed\n"
                 group_percentage = int(
                     ((total_completions / (len(users) * len(questions)))) * 100
                 )
                 result += f"Group completion: {group_percentage}%"
         if challenge:
+            result += "\n"
             for user in users:
                 stars = Emojis.star * user_scores[user["leetcode_id"]]
                 # NOTICE: In the future all database methods should return a well-defined
