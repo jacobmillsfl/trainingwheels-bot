@@ -152,6 +152,8 @@ class DiscordUtil(commands.Bot, CommandAbstract):
 
         @self.command(name="new-challenge", pass_context=True)
         async def new_challenge(ctx: commands.Context):
+            if str(ctx.channel.id) != str(self.channel_id):
+                return
             return_message = ""
             discord_id = str(ctx.author.id)
             parsed_command = self.parser.parse(ctx.message.content, discord_id)
@@ -181,6 +183,8 @@ class DiscordUtil(commands.Bot, CommandAbstract):
 
         @self.command("group-status", pass_context=True)
         async def group_status(ctx: commands.Context):
+            if str(ctx.channel.id) != str(self.channel_id):
+                return
             message = await ctx.channel.send("Checking group status...")
             return_message = ""
             discord_id = str(ctx.author.id)
