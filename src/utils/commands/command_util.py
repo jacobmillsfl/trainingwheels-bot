@@ -217,11 +217,12 @@ Supported commands:
                             user_scores[user["leetcode_id"]] += question["difficulty"]
                             completions += 1
                     total_completions += completions
-                    result += f"{question['title']}\n\t*{completions}/{len(users)} users completed*\n"
+                    result += f"{question['title']}\n" \
+                        f"\t*{completions}/{len(users)} users completed*\n\n"
                 group_percentage = int(
                     ((total_completions / (len(users) * len(questions)))) * 100
                 )
-                result += f"\n**Group completion:** {group_percentage}%"
+                result += f"**Group completion:** {group_percentage}%"
         if challenge:
             result += "\n\n"
             for user in users:
