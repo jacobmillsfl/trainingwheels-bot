@@ -130,7 +130,7 @@ class DiscordUtil(commands.Bot, CommandAbstract):
             else:
                 kwargs = {"discord_id": discord_id}
                 result = self._rank(**kwargs)
-                return_message = result
+                return_message = f"```\n{result}\n```"
 
             await ctx.channel.send(return_message)
 
@@ -190,6 +190,7 @@ class DiscordUtil(commands.Bot, CommandAbstract):
             else:
                 result = self._group_status()
                 return_message = result
+
             await message.edit(content=return_message)
 
     def run(self):
