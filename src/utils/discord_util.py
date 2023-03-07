@@ -150,7 +150,7 @@ class DiscordUtil(commands.Bot, CommandAbstract):
 
             await ctx.channel.send(return_message)
 
-        @self.command(name="new-challenge", parse_context=True)
+        @self.command(name="new-challenge", pass_context=True)
         async def new_challenge(ctx: commands.Context):
             return_message = ""
             discord_id = str(ctx.author.id)
