@@ -225,13 +225,15 @@ Supported commands:
                 result += f"**Group completion:** {group_percentage}%"
         if challenge:
             result += "\n\n"
+            max_name_width = max(list(len(u["leetcode_id"]) for u in users))
             for user in users:
-                stars = Emojis.star * user_scores[user["leetcode_id"]]
-                # NOTICE: In the future all database methods should return a well-defined
-                #         object. That avoids having to do things like the following and
-                #         allows for direct access via dot-operator
-                LEETCODE_STR = "leetcode_id"
-                result += f"\t{user[LEETCODE_STR]}: {stars}\n"
+                if user_scores[user["leetcode_id"]]:
+                    stars = Emojis.star * user_scores[user["leetcode_id"]]
+                    # NOTICE: In the future all database methods should return a well-defined
+                    #         object. That avoids having to do things like the following and
+                    #         allows for direct access via dot-operator
+                    LEETCODE_STR = "leetcode_id"
+                    result += f"`  {user[LEETCODE_STR].rjust(max_name_width)}` {stars}\n"
         return result
 
     def run(self) -> None:
