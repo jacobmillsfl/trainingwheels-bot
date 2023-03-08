@@ -429,6 +429,7 @@ disable=raw-checker-failed,
         E1121, # Ignoring too many position arguemnts error until we refactor
         R0801, # This is a really dumb linter rule that suppresses using abstration
         R0903, # Another dumb error related to "too few public methods"
+        R0914, # Too many local variables. A reasonable error but we need to refactor to address
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
