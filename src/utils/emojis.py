@@ -9,3 +9,4 @@ class Emojis(str, Enum):
     """
     check_mark=":white_check_mark:"
     red_x=":x:"
+    star=":star:"

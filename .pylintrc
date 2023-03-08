@@ -427,7 +427,8 @@ disable=raw-checker-failed,
         R0904, # Not much to do about "too many public methods" until we refactor our classes
         R0915, # Ignoring too many statements error until we refactor
         E1121, # Ignoring too many position arguemnts error until we refactor
-
+        R0801, # This is a really dumb linter rule that suppresses using abstration
+        R0903, # Another dumb error related to "too few public methods"
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
