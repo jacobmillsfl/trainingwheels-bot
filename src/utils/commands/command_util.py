@@ -151,12 +151,11 @@ Supported commands:
                 else:
                     completed = 0
                     for question in questions:
-                        completed_count = self.completion_check(
+                        completed += self.completion_check(
                             question,
                             leetcode_user_id,
                             question["title_slug"]
                             )
-                        completed += completed_count
                     percentage = int(completed/total * 100)
                     result += f"User {leetcode_user_id}'s Weekly Challenge status: {percentage}%\n"
                     for question in questions:
