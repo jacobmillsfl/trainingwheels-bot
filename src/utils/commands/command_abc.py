@@ -41,6 +41,7 @@ class CommandAbstract(ABC):
         """
         pass
 
+    @abstractmethod
     def completion_check(self, **kwargs) -> int:
         """
         Helper function for status & group_status to check for question completion
