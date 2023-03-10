@@ -109,6 +109,25 @@ Supported commands:
             )
         return result
 
+    def completion_check(self, question: dict, leetcode_user_id: str) -> int:
+        """
+        Helper function for status & group_status to check for question completion
+        """
+        completed = 0
+        question["complete"] = self.database.question_completions.check_completion(
+            leetcode_user_id, question["title_slug"]
+            )
+        if question["complete"]:
+            completed += 1
+        else:
+            question["complete"] = self.leetcode.check_challenge_completion(
+                leetcode_user_id, question["title_slug"]
+            )
+            if question["complete"]:
+                completed += 1
+                self.database.question_completions.insert(leetcode_user_id, question["title_slug"])
+        return completed
+
     def status(self, discord_id: str) -> str:
         """
         Determines the completion status of each question in the current
@@ -132,11 +151,12 @@ Supported commands:
                 else:
                     completed = 0
                     for question in questions:
-                        question["complete"] = self.leetcode.check_challenge_completion(
-                            leetcode_user_id, question["title_slug"]
-                        )
-                        if question["complete"]:
-                            completed += 1
+                        completed_count = self.completion_check(
+                            question,
+                            leetcode_user_id,
+                            question["title_slug"]
+                            )
+                        completed += completed_count
                     percentage = int(completed/total * 100)
                     result += f"User {leetcode_user_id}'s Weekly Challenge status: {percentage}%\n"
                     for question in questions:
@@ -146,8 +166,57 @@ Supported commands:
                             f"\t-\t{question['title']}\n"
                         )
         else:
-            result += "Leetcode user not found. Claim your user idea with"
+            result += "Leetcode user not found. Claim your user id with"
             result += " `!claim <leetcode_username>`"
+        return result
+
+    def group_status(self) -> str:
+        """
+        Calculates and summarizes the number of users who have completed each question
+        in the current challenge
+        """
+        result = ""
+        users = self.database.users.loadall()
+        challenge = self.database.weekly_challenges.get_latest()
+        if not challenge:
+            result += "No current challenge"
+        elif len(users) == 0:
+            result += "No registered users"
+        else:
+            date = datetime.fromtimestamp(challenge["date"])
+            result += f"**Challenge {challenge['id']} | {date.strftime('%Y-%m-%d')}**\n\n"
+            questions = self.database.weekly_questions.load_by_challenge_id(challenge["id"])
+            user_scores = { user["leetcode_id"] : 0 for user in users }
+
+            if len(questions) == 0:
+                result += "Current challenge is empty"
+            else:
+                total_completions = 0
+                for question in questions:
+                    completions = 0
+                    for user in users:
+                        completed_count = self.completion_check(question, user["leetcode_id"])
+                        if completed_count > 0:
+                            user_scores[user["leetcode_id"]] += question["difficulty"]
+                        completions += completed_count
+                    total_completions += completions
+                    result += f"{question['title']}\n" \
+                        f"\t*{completions}/{len(users)} users completed*\n\n"
+                group_percentage = int(
+                    ((total_completions / (len(users) * len(questions)))) * 100
+                )
+                result += f"**Group completion:** {group_percentage}%"
+        if challenge:
+            result += "\n\n"
+            max_name_width = max(list(len(u["leetcode_id"]) for u in users))
+            for user in users:
+                if user_scores[user["leetcode_id"]]:
+                    stars = Emojis.star * user_scores[user["leetcode_id"]]
+                    # NOTICE: In the future all database methods should return a well-defined
+                    #         object. That avoids having to do things like the following and
+                    #         allows for direct access via dot-operator
+                    LEETCODE_STR = "leetcode_id"
+                    result += f"`  {user[LEETCODE_STR].rjust(max_name_width)}` {stars}\n"
         return result
 
     def new_challenge(self) -> str:
@@ -184,57 +253,6 @@ Supported commands:
         else:
             return_message = user["leetcode_id"]
         return return_message
-
-    def group_status(self) -> str:
-        """
-        Calculates and summarizes the number of users who have completed each question
-        in the current challenge
-        """
-        result = ""
-        users = self.database.users.loadall()
-        challenge = self.database.weekly_challenges.get_latest()
-        if not challenge:
-            result += "No current challenge"
-        elif len(users) == 0:
-            result += "No registered users"
-        else:
-            date = datetime.fromtimestamp(challenge["date"])
-            result += f"**Challenge {challenge['id']} | {date.strftime('%Y-%m-%d')}**\n\n"
-            questions = self.database.weekly_questions.load_by_challenge_id(challenge["id"])
-            user_scores = { user["leetcode_id"] : 0 for user in users }
-
-            if len(questions) == 0:
-                result += "Current challenge is empty"
-            else:
-                total_completions = 0
-                for question in questions:
-                    completions = 0
-                    for user in users:
-                        completed = self.leetcode.check_challenge_completion(
-                                    user["leetcode_id"],
-                                    question["title_slug"])
-                        if completed:
-                            user_scores[user["leetcode_id"]] += question["difficulty"]
-                            completions += 1
-                    total_completions += completions
-                    result += f"{question['title']}\n" \
-                        f"\t*{completions}/{len(users)} users completed*\n\n"
-                group_percentage = int(
-                    ((total_completions / (len(users) * len(questions)))) * 100
-                )
-                result += f"**Group completion:** {group_percentage}%"
-        if challenge:
-            result += "\n\n"
-            max_name_width = max(list(len(u["leetcode_id"]) for u in users))
-            for user in users:
-                if user_scores[user["leetcode_id"]]:
-                    stars = Emojis.star * user_scores[user["leetcode_id"]]
-                    # NOTICE: In the future all database methods should return a well-defined
-                    #         object. That avoids having to do things like the following and
-                    #         allows for direct access via dot-operator
-                    LEETCODE_STR = "leetcode_id"
-                    result += f"`  {user[LEETCODE_STR].rjust(max_name_width)}` {stars}\n"
-        return result
 
     def run(self) -> None:
         """
