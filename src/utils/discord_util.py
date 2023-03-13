@@ -52,15 +52,6 @@ class DiscordUtil(commands.Bot, CommandAbstract):
         """
         return self.command_util.rank(kwargs["discord_id"])
 
-    def _completion_check(self, **kwargs) -> int:
-        """
-        Helper function for status & group_status to check for question completion
-        Keyword Args:
-         - question         The question to be checked
-         - leetcode_user_id The leetcode user ID
-        """
-        return self.command_util.completion_check(kwargs["question"], kwargs["leetcode_user_id"])
-
     def _status(self, **kwargs):
         """
         Determines the weekly challenge completion status for a user

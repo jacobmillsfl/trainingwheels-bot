@@ -42,16 +42,6 @@ class CommandAbstract(ABC):
         pass
 
     @abstractmethod
-    def _completion_check(self, **kwargs) -> int:
-        """
-        Helper function for status & group_status to check for question completion
-        Keyword Args:
-         - question         The question to be checked
-         - leetcode_user_id The leetcode user ID
-        """
-        pass
-
-    @abstractmethod
     def _status(self, **kwargs) -> str:
         """
         Determines the completion status of each question in the current

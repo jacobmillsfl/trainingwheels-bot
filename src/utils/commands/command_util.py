@@ -109,61 +109,61 @@ Supported commands:
             )
         return result
 
-    def completion_check(self, question: dict, leetcode_user_id: str) -> int:
+    def update_user_completions(self, leetcode_id, challenge_id: str) -> bool:
         """
-        Helper function for status & group_status to check for question completion
+        Checks whether the Question Completions database table has completions recorded
+        for all questions of the passed challenge. Returns False if so, otherwise makes an API
+        call, inserts any new completions to Question Completions database table,
+        and returns True to show an update was run.
         """
-        completed = 0
-        question["complete"] = self.database.question_completions.check_completion(
-            leetcode_user_id, question["title_slug"]
-            )
-        if question["complete"]:
-            completed += 1
-        else:
-            question["complete"] = self.leetcode.check_challenge_completion(
-                leetcode_user_id, question["title_slug"]
-            )
-            if question["complete"]:
-                completed += 1
-                self.database.question_completions.insert(leetcode_user_id, question["title_slug"])
-        return completed
+        completions = self.database.question_completions.load_all_title_slugs_by_user(leetcode_id)
+        questions = self.database.weekly_questions.load_all_title_slugs_by_challenge(challenge_id)
+        completed_in_database = list(set(completions) & set(questions))
+        if len(completed_in_database) < len(questions):
+            submissions = self.leetcode.get_recent_submissions(leetcode_id)
+            self.database.question_completions.insert_many(leetcode_id, submissions)
+            return True
+        return False
 
     def status(self, discord_id: str) -> str:
         """
         Determines the completion status of each question in the current
-        weekly challenge for the given leetcode_user_id. Calls the
-        `submissions` leetcode API to determine which of the weekly
-        challenge problems the given user has solved. Gathers the list
+        weekly challenge for the given leetcode_user_id. Calls update_user_completions to check
+        database for completions and updates via leetcode API ONLY if necessary. Gathers the list
         of current weekly challenges from the database.
         """
         result = ""
         user = self.database.users.load_by_discord_id(discord_id)
         if user:
-            leetcode_user_id = user["leetcode_id"]
             challenge = self.database.weekly_challenges.get_latest()
-            if not challenge:
-                result += "No current challenges"
-            else:
-                questions = self.database.weekly_questions.load_by_challenge_id(challenge["id"])
-                total = len(questions)
-                if total == 0:
-                    result += "No current weekly questions"
-                else:
-                    completed = 0
-                    for question in questions:
-                        completed += self.completion_check(
-                            question,
-                            leetcode_user_id,
-                            question["title_slug"]
-                            )
-                    percentage = int(completed/total * 100)
-                    result += f"User {leetcode_user_id}'s Weekly Challenge status: {percentage}%\n"
-                    for question in questions:
-                        complete = question["complete"]
-                        result += (
-                            f"\t{self.reaction_complete if complete else self.reaction_incomplete}"
-                            f"\t-\t{question['title']}\n"
+            if challenge:
+                user_leetcode_id = user["leetcode_id"]
+                self.update_user_completions(user_leetcode_id, challenge["id"])
+                completions = self.database.question_completions.load_all_title_slugs_by_user(
+                    user_leetcode_id
+                    )
+                question_slugs = self.database.weekly_questions.load_all_title_slugs_by_challenge(
+                    challenge["id"]
+                    )
+                completed_in_database = list(set(completions) & set(question_slugs))
+                total_completions = len(completed_in_database)
+                total_questions = len(question_slugs)
+                percentage = int(total_completions / total_questions * 100)
+                result += f"User {user_leetcode_id}'s Weekly Challenge status: {percentage}%\n"
+                completed_all = total_completions == total_questions
+                for question_slug in question_slugs:
+                    complete = True if completed_all else \
+                    self.database.question_completions.check_completion(
+                        user_leetcode_id,
+                        question_slug
                         )
+                    question = self.database.weekly_questions.load_by_title_slug(question_slug)
+                    result += (
+                        f"\t{self.reaction_complete if complete else self.reaction_incomplete}"
+                        f"\t-\t{question['title']}\n"
+                    )
+            else:
+                result += "No current challenges"
         else:
             result += "Leetcode user not found. Claim your user id with"
             result += " `!claim <leetcode_username>`"
@@ -186,18 +186,22 @@ Supported commands:
             result += f"**Challenge {challenge['id']} | {date.strftime('%Y-%m-%d')}**\n\n"
             questions = self.database.weekly_questions.load_by_challenge_id(challenge["id"])
             user_scores = { user["leetcode_id"] : 0 for user in users }
-
             if len(questions) == 0:
                 result += "Current challenge is empty"
             else:
                 total_completions = 0
+                for user in users:
+                    self.update_user_completions(user["leetcode_id"], challenge["id"])
                 for question in questions:
                     completions = 0
                     for user in users:
-                        completed_count = self.completion_check(question, user["leetcode_id"])
-                        if completed_count > 0:
+                        completed = self.database.question_completions.check_completion(
+                            user["leetcode_id"],
+                            question["title_slug"]
+                            )
+                        if completed:
                             user_scores[user["leetcode_id"]] += question["difficulty"]
-                        completions += completed_count
+                            completions += 1
                     total_completions += completions
                     result += f"{question['title']}\n" \
                         f"\t*{completions}/{len(users)} users completed*\n\n"

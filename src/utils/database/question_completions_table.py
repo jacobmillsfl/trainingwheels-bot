@@ -2,6 +2,7 @@
 Question Completions module
 """
 
+from typing import List
 from tinydb import TinyDB, where
 from .db_decorators import validate_insert
 
@@ -30,9 +31,20 @@ class QuestionCompletionsTable():
             return True
         return False
 
+    def insert_many(self, leetcode_id: str, items: List[dict]) -> int:
+        """
+        Inserts a collection of items into the Question Completions database table
+        """
+        inserts = 0
+        for item in items:
+            completion_insert = {"leetcode_id": leetcode_id, "title_slug": item["title_slug"]}
+            if self.insert(completion_insert):
+                inserts += 1
+        return inserts
+
     def load(self, leetcode_id: str, title_slug: str):
         """
-        Loads a single item by leetcode_id and title_slug in the Question Completions database table
+        Load a single item by leetcode_id and title_slug in the Question Completions database table
         """
         completion = self.table.search(
             where("leetcode_id") == leetcode_id
@@ -41,6 +53,16 @@ class QuestionCompletionsTable():
         if len(completion) == 0:
             return None
         return completion[0]
+
+    def load_all_title_slugs_by_user(self, leetcode_id):
+        """
+        Loads a list of all title slugs in the Question Completions database table
+        """
+        results = self.table.search(where("leetcode_id") == leetcode_id)
+        title_slugs = []
+        for item in results:
+            title_slugs.append(item["title_slug"])
+        return title_slugs
 
     def check_completion(self, leetcode_id: str, title_slug: str) -> bool:
         """
