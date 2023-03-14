@@ -142,22 +142,20 @@ Supported commands:
                 completions = self.database.question_completions.load_all_title_slugs_by_user(
                     user_leetcode_id
                     )
-                question_slugs = self.database.weekly_questions.load_all_title_slugs_by_challenge(
-                    challenge["id"]
-                    )
+                questions = self.database.weekly_questions.load_by_challenge_id(challenge["id"])
+                question_slugs = [q['title_slug'] for q in questions]
                 completed_in_database = list(set(completions) & set(question_slugs))
                 total_completions = len(completed_in_database)
                 total_questions = len(question_slugs)
                 percentage = int(total_completions / total_questions * 100)
                 result += f"User {user_leetcode_id}'s Weekly Challenge status: {percentage}%\n"
                 completed_all = total_completions == total_questions
-                for question_slug in question_slugs:
+                for question in questions:
                     complete = True if completed_all else \
                     self.database.question_completions.check_completion(
                         user_leetcode_id,
-                        question_slug
+                        question["title_slug"]
                         )
-                    question = self.database.weekly_questions.load_by_title_slug(question_slug)
                     result += (
                         f"\t{self.reaction_complete if complete else self.reaction_incomplete}"
                         f"\t-\t{question['title']}\n"
