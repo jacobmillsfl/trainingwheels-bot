@@ -97,7 +97,6 @@ Hard Challenges:     {hard_count}
         """
         Gathers the provided user's recent submissions
         """
-
         recent_completions = []
         query = QueryBuilder.query_builder_recent_stats(leetcode_username, self.data_limit)
         response = requests.get(self.GRAPH_URL,

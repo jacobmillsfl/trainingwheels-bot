@@ -70,3 +70,13 @@ class WeeklyQuestionTable:
         Loads all items in the Weekly_Question database table
         """
         return self.table.all()
+
+    def load_all_title_slugs_by_challenge(self, challenge_id):
+        """
+        Loads a list of all title slugs in the Weekly_Question database table
+        """
+        results = self.table.search(where("challenge_id") == challenge_id)
+        title_slugs = []
+        for item in results:
+            title_slugs.append(item["title_slug"])
+        return title_slugs

@@ -26,7 +26,7 @@ class UsersTable():
     @validate_insert(required_fields=TABLE_FIELDS)
     def insert(self, item: dict) -> bool:
         """
-        Inserts a collection of items in the LeetcodeUser database table
+        Inserts an item in the LeetcodeUser database table
         """
         matches = self.table.search(
             where("discord_id") == item["discord_id"]
