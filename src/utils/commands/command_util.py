@@ -149,13 +149,8 @@ Supported commands:
                 total_questions = len(question_slugs)
                 percentage = int(total_completions / total_questions * 100)
                 result += f"User {user_leetcode_id}'s Weekly Challenge status: {percentage}%\n"
-                completed_all = total_completions == total_questions
                 for question in questions:
-                    complete = True if completed_all else \
-                    self.database.question_completions.check_completion(
-                        user_leetcode_id,
-                        question["title_slug"]
-                        )
+                    complete = question["title_slug"] in completions
                     result += (
                         f"\t{self.reaction_complete if complete else self.reaction_incomplete}"
                         f"\t-\t{question['title']}\n"
@@ -188,15 +183,16 @@ Supported commands:
                 result += "Current challenge is empty"
             else:
                 total_completions = 0
+                completions_map = {}
                 for user in users:
                     self.update_user_completions(user["leetcode_id"], challenge["id"])
+                    completions = self.database.question_completions.load_all_title_slugs_by_user(
+                        user["leetcode_id"])
+                    completions_map[user["leetcode_id"]] = completions
                 for question in questions:
                     completions = 0
                     for user in users:
-                        completed = self.database.question_completions.check_completion(
-                            user["leetcode_id"],
-                            question["title_slug"]
-                            )
+                        completed = question["title_slug"] in completions_map[user["leetcode_id"]]
                         if completed:
                             user_scores[user["leetcode_id"]] += question["difficulty"]
                             completions += 1
