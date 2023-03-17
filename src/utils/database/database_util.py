@@ -9,6 +9,7 @@ from .users_table import UsersTable
 from .weeklyquestion_table import WeeklyQuestionTable
 from .leetcode_question_table import LeetcodeQuestionsTable
 from .weekly_challenge_table import WeeklyChallengeTable
+from .question_completions_table import QuestionCompletionsTable
 
 # Database Utility Class Definition
 class DatabaseUtil:
@@ -23,6 +24,8 @@ class DatabaseUtil:
         self.weekly_questions = WeeklyQuestionTable(self.db)
         self.leetcode_questions = LeetcodeQuestionsTable(self.db)
         self.weekly_challenges = WeeklyChallengeTable(self.db)
+        self.question_completions = QuestionCompletionsTable(self.db)
+
 
 
     def create_new_weekly_challenge(self, question_list: List[dict]) -> str:
