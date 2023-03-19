@@ -22,9 +22,8 @@ class QuestionCompletionsTable():
         Inserts a single item of leetcode_id and title_slug to QuestionCompletions database table
         """
         matches = self.table.search(
-            where("leetcode_id") == item["leetcode_id"]
-            and where("title_slug") == item["title_slug"]
-
+            (where("leetcode_id") == item["leetcode_id"])
+            & (where("title_slug") == item["title_slug"])
         )
         if len(matches) == 0:
             self.table.insert(item)
