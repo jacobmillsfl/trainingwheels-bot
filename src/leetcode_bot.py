@@ -48,7 +48,7 @@ if __name__ == "__main__":
     if args.update:
         print("Updating Leetcode questions in our database...")
         new_questions = leetcode.api_questions_loadall()
-        count = database.table_leetcodequestion_insert_many(new_questions)
+        count = database.leetcode_questions.insert_many(new_questions)
         print(f"Inserted {count} new questions into the database")
 
     if args.discord:
