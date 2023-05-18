@@ -93,7 +93,7 @@ class DiscordUtil(commands.Bot, CommandAbstract):
             if len(parsed_command.errors) > 0:
                 return_message = "\n".join(parsed_command.errors)
             else:
-                leetcode_id = parsed_command.args[0]
+                leetcode_id = parsed_command.kwargs["leetcode_id"]
                 kwargs = {
                     "discord_id": discord_id,
                     "leetcode_id": leetcode_id
